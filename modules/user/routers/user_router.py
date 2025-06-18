@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Request, Depends
 from fastapi_sso.sso.spotify import SpotifySSO
+from modules.user.dtos.user_response_dto import UserResponseDTO
 from dependencies.spotify_sso import sso_dependency
 
 
@@ -14,19 +15,17 @@ async def login(
     ):
     async with sso:
         return await sso.get_login_redirect()
+    
 
-@router.get("/callback")
+@router.get("/callback",
+            response_model=UserResponseDTO
+            )
 async def callback(
     request: Request, 
     sso: SpotifySSO = Depends(sso_dependency)
     ):
     async with sso:
         user = await sso.verify_and_process(request)
-    return {
-        "id": user.id,
-        "email": user.email,
-        "first_name": user.first_name,
-        "last_name": user.last_name,
-        "display_name": user.display_name,
-        "provider": user.provider
-    }
+    return UserResponseDTO(
+        **user.model_dump()
+    )
