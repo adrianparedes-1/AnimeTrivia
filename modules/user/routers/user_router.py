@@ -1,6 +1,8 @@
-from fastapi import APIRouter, Request, Depends
+from fastapi import APIRouter, Depends, Request
 from fastapi_sso.sso.spotify import SpotifySSO
-from modules.user.dtos.user_response_dto import UserResponseDTO
+from modules.user.dtos import (
+    user_response_dto
+)
 from dependencies.spotify_sso import sso_dependency
 
 
@@ -18,14 +20,14 @@ async def login(
     
 
 @router.get("/callback",
-            response_model=UserResponseDTO
+            response_model=user_response_dto.UserResponseDTO
             )
 async def callback(
-    request: Request, 
+    request: Request, # verify_and_process() method expects a fastapi Request object so this is the easiest method rather than defining a pydantic dto
     sso: SpotifySSO = Depends(sso_dependency)
     ):
     async with sso:
         user = await sso.verify_and_process(request)
-    return UserResponseDTO(
+    return user_response_dto.UserResponseDTO(
         **user.model_dump()
     )

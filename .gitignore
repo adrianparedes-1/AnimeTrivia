@@ -5,6 +5,7 @@ build/
 dist/
 wheels/
 *.egg-info
+*.py.mako
 
 # Virtual environments
 .venv
