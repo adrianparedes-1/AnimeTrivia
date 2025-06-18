@@ -1,11 +1,6 @@
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Request, Depends
 from fastapi_sso.sso.spotify import SpotifySSO
-from dtos.user_long_dto import UserLogin
-import os
-
-client_id = os.getenv("CLIENT_ID")
-client_secret = os.getenv("CLIENT_SERVICE")
-redirect_uri = "http://127.0.0.1:8000/auth/complete/spotify"
+from dependencies.spotify_sso import sso_dependency
 
 
 router = APIRouter(
@@ -13,27 +8,25 @@ router = APIRouter(
     tags=["Authentication"]
 )
 
-
-spotify_sso = SpotifySSO(
-    client_id=client_id,
-    client_secret=client_secret,
-    redirect_uri=redirect_uri,
-    scope="user-read-email user-read-private"
-)
-
-
 @router.get("")
-async def login():
-    return await spotify_sso.get_login_redirect()
+async def login(
+    sso: SpotifySSO = Depends(sso_dependency)
+    ):
+    async with sso:
+        return await sso.get_login_redirect()
 
-
-@router.get("/complete/spotify")
-async def callback(request: Request):
-    async with spotify_sso:
-        user = await spotify_sso.verify_and_process(request)
+@router.get("/callback")
+async def callback(
+    request: Request, 
+    sso: SpotifySSO = Depends(sso_dependency)
+    ):
+    async with sso:
+        user = await sso.verify_and_process(request)
     return {
         "id": user.id,
         "email": user.email,
+        "first_name": user.first_name,
+        "last_name": user.last_name,
         "display_name": user.display_name,
-        "picture": user.picture,
+        "provider": user.provider
     }
