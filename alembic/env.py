@@ -6,6 +6,7 @@ from alembic import context
 from db.base_orm_model import Base
 import os
 from dotenv import load_dotenv
+from modules.user.models import user_models
 
 load_dotenv()
 db_uri = os.getenv("DATABASE_URI")
