@@ -1,10 +1,12 @@
 from fastapi import APIRouter, Depends, Request
 from fastapi_sso.sso.spotify import SpotifySSO
+from dependencies.spotify_sso import sso_dependency
 from modules.user.dtos import (
     user_response_dto
 )
-from dependencies.spotify_sso import sso_dependency
-
+from modules.user.services.user_service import (
+    create
+)
 
 router = APIRouter(
     prefix="/auth", 
@@ -28,6 +30,8 @@ async def callback(
     ):
     async with sso:
         user = await sso.verify_and_process(request)
+        
+    create(user)
     return user_response_dto.UserResponseDTO(
         **user.model_dump()
     )
