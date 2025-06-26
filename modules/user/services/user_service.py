@@ -2,6 +2,7 @@
 from modules.user.dtos.user_create_dto import UserCreateDTO
 from modules.user.models.user_models import UserORM
 from db.session_manager import get_db
+import redis
 # from dependencies.spotify_sso import (
 #     redirect_uri,
 #     client_id,
@@ -27,7 +28,17 @@ def create(user: UserCreateDTO) -> None:
         db.add(user_orm)
         db.commit()
         
-        
+def save_in_redis(user, access_token, refresh_token):
+    r = redis.Redis(host='localhost', port=6379, decode_responses=True)
+    key = f"spotify_tokens:{user}"
+    r.hset(key, mapping={
+        "access_token" : f"{access_token}",
+        "refresh_token" : f"{refresh_token}",
+        "expires_in" : "3600"
+    })
+    r.expire(key, 3600)
+    print(r.hgetall(key)) 
+
 # async def exchange_code_token(code: str):
 #     async with httpx.AsyncClient() as client:
 #         r = await client.post("https://accounts.spotify.com/api/token",

@@ -8,7 +8,8 @@ from dependencies.spotify_sso import (
     CustomSpotifySSO
 )
 from modules.user.services.user_service import (
-    create
+    create,
+    save_in_redis
 )
 
 router = APIRouter(
@@ -26,7 +27,6 @@ async def login():
     ) as sso:
         return await sso.get_login_redirect()
 
-    
 
 @router.get("/callback")
 async def callback(request: Request):
@@ -37,18 +37,19 @@ async def callback(request: Request):
         scope="user-read-email user-read-private"
     ) as sso:
         user = await sso.verify_and_process(request)
-        
     create(user)
-    return RedirectResponse ({
-        "user": user.model_dump(),
-        "access_token": sso._custom_access_token,
-        "refresh_token": sso._custom_refresh_token
-    })
+    save_in_redis(
+        user.id,
+        sso._custom_access_token,
+        sso._custom_refresh_token
+        )
 
-    
+    return RedirectResponse(
+        url=URL("/auth/token")
+    )
 
 @router.get("/token")
-async def get_token(request: Request): ...
-    # print("hello world")
+async def get_token(request: Request):
+    print("hello world")
     
     # https://api.spotify.com/api/token
