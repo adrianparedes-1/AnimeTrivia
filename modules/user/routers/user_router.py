@@ -42,23 +42,16 @@ async def callback(request: Request):
     spotify_access_token = sso._custom_access_token
     spotify_refresh_token = sso._custom_refresh_token
     app_access_token, app_refresh_token = create_tokens(user.model_dump())
-
-    token_data = {
-        "user_id" : user.id,
-        "spotify" : {
-            "spotify_access_token" : spotify_access_token,
-            "spotify_refresh_token": spotify_refresh_token
-        },
-        "app": {
-            "app_access_token" : app_access_token,
-            "app_refresh_token" : app_refresh_token
-        }
-    }
-
-
+    
     if user and app_access_token:
         # add logic for creating access and refresh tokens for this backend service so I can save them in same hashmap as the spotify tokens in redis
-        save_in_redis(token_data)
+        save_in_redis(
+            user.id,
+            app_access_token,
+            app_refresh_token,
+            spotify_access_token,
+            spotify_refresh_token
+            )
 
     return RedirectResponse(
         url=URL("/auth/token")

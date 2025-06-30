@@ -28,12 +28,24 @@ def create(user: UserCreateDTO) -> None:
         )
         db.add(user_orm)
         db.commit()
-        
-def save_in_redis(token_data: Dict):
+
+def save_in_redis(user_id: str, 
+            app_access_token,
+            app_refresh_token,
+            spotify_access_token,
+            spotify_refresh_token
+            ):
     r = redis.Redis(host='localhost', port=6379, decode_responses=True)
-    key = f"{token_data["user_id"]}"
-    
-    print(r.hgetall(key)) 
+    r.setex(f"{user_id}:app_access_token:", 3600, app_access_token)
+    r.setex(f"{user_id}:app_refresh_token:", 86400, app_refresh_token)
+    r.setex(f"{user_id}:spotify_access_token:", 3600, spotify_access_token)
+    r.setex(f"{user_id}:spotify_refresh_token:", 86400, spotify_refresh_token)
+
+    keys = r.keys(f"{user_id}:*")
+    for key in keys:
+        value = r.get(key)
+        print(f"{key} => {value}")
+
 
 # async def exchange_code_token(code: str):
 #     async with httpx.AsyncClient() as client:
