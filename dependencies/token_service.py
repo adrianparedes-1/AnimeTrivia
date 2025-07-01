@@ -25,6 +25,7 @@ def create_tokens(data: dict):
         "exp": int((current_time + timedelta(days=1)).replace(tzinfo=timezone.utc).timestamp()), # expiration time
         "iat": int(current_time.replace(tzinfo=timezone.utc).timestamp()), # issued at time (current time)
     })
+    
     refresh_token = jwt.encode(
         data_encode,
         secret,

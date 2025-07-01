@@ -1,13 +1,13 @@
-from fastapi import APIRouter, Depends, Request, Response, status
+from fastapi import APIRouter, Request
 from fastapi.responses import RedirectResponse
 from fastapi.datastructures import URL
+from dependencies.token_service import create_tokens
 from dependencies.spotify_sso import (
     client_id,
     client_secret,
     redirect_uri,
     CustomSpotifySSO
 )
-from dependencies.token_service import create_tokens
 from modules.user.services.user_service import (
     create,
     save_in_redis
@@ -38,13 +38,19 @@ async def callback(request: Request):
         scope="user-read-email user-read-private"
     ) as sso:
         user = await sso.verify_and_process(request)
+
+    # save user in db
     create(user)
+    # initialize local variables to save spotify tokens
     spotify_access_token = sso._custom_access_token
     spotify_refresh_token = sso._custom_refresh_token
-    app_access_token, app_refresh_token = create_tokens(user.model_dump())
     
+    # create backend tokens
+    app_access_token, app_refresh_token = create_tokens(user.model_dump())
+    # print(f"Test ------------- {app_access_token}")
+    # print(f"Test ------------- {app_refresh_token}")
+    # save all tokens in redis
     if user and app_access_token:
-        # add logic for creating access and refresh tokens for this backend service so I can save them in same hashmap as the spotify tokens in redis
         save_in_redis(
             user.id,
             app_access_token,
@@ -53,12 +59,14 @@ async def callback(request: Request):
             spotify_refresh_token
             )
 
+    # redirect to complete endpoint
     return RedirectResponse(
-        url=URL("/auth/token")
+        url=URL("/auth/complete")
     )
 
-@router.get("/token")
-async def get_token(request: Request):
-    print("hello world")
-    
-    # https://api.spotify.com/api/token
+# redirect to menu router
+@router.get("/complete")
+async def get_token():
+    return RedirectResponse(
+        url=URL("/home")
+    )

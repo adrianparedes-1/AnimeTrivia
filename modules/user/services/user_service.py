@@ -1,6 +1,6 @@
 # import httpx, base64
 from modules.user.dtos.user_create_dto import UserCreateDTO
-from modules.user.models.user_models import UserORM
+from modules.user.models.user_model import UserORM
 from db.session_manager import get_db
 import redis
 from typing import Dict
@@ -41,11 +41,11 @@ def save_in_redis(user_id: str,
     r.setex(f"{user_id}:spotify_access_token:", 3600, spotify_access_token)
     r.setex(f"{user_id}:spotify_refresh_token:", 86400, spotify_refresh_token)
 
-    keys = r.keys(f"{user_id}:*")
-    for key in keys:
-        value = r.get(key)
-        print(f"{key} => {value}")
-
+    # uncomment to print values
+    # keys = r.keys(f"{user_id}:*")
+    # for key in keys:
+    #     value = r.get(key)
+    #     print(f"{key} => {value}")
 
 # async def exchange_code_token(code: str):
 #     async with httpx.AsyncClient() as client:
