@@ -18,7 +18,7 @@ app.include_router(menu_router.router)
 
 @app.middleware("http")
 async def auth_user(request: Request, call_next):
-    public_paths = ["*"]
+    public_paths = ["/auth", "/docs", "/openapi.json"]
 
     if request.method == "OPTIONS":
         return await call_next(request)
@@ -36,4 +36,5 @@ async def auth_user(request: Request, call_next):
         return response
 
     # if the token validation is successful (200 OK), then go on to the route and pass the decoded token (response)
-    return await call_next(request, response)
+    request.state.user = response
+    return await call_next(request)

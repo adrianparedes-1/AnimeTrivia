@@ -14,9 +14,9 @@ router = APIRouter(
     tags=["Menu"]
 )
 
-@router.get("")
-def test():
-    return "placeholder for frontend endpoint"
+# @router.get("")
+# def test():
+#     return "placeholder for frontend endpoint"
 
 
 '''
@@ -34,3 +34,9 @@ check_token returns a decoded token which i need to get the username from the pa
 async def profile(request: Request):
     async with show_profile(request.body("username")) as profile: # this is just to wait for the username to be extracted from the jwt
         ...
+
+@router.get("")
+async def read_profile(request: Request):
+    current_user = getattr(request.state, "user", None)
+    print(f"Decoded user from token: {current_user}")
+    return {"user": current_user}

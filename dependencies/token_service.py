@@ -1,6 +1,7 @@
 import os
 from jose import ExpiredSignatureError, jwt
 from jose.exceptions import JWEInvalidAuth
+from fastapi import Response, status
 from dotenv import load_dotenv
 from datetime import datetime, timedelta, timezone
 
@@ -33,9 +34,10 @@ def create_tokens(data: dict):
     )
     return access_token, refresh_token
     
-def check_token(token):
+def check_token(token) -> dict:
     if not token:
-        return JWEInvalidAuth
+        return Response(status_code=status.HTTP_401_UNAUTHORIZED)
+        
     try:
         decoded = jwt.decode(
             token, 
@@ -46,10 +48,10 @@ def check_token(token):
                 "verify_exp": True
             }
         )
-        return decoded
+        return decoded  # Return the decoded dict directly
     except ExpiredSignatureError as e:
         print(f"Token expired: {str(e)}")
-        return ExpiredSignatureError
+        return Response(status_code=status.HTTP_401_UNAUTHORIZED)
     except JWEInvalidAuth as k:
         print(f"Invalid token: {str(k)}")
-        return JWEInvalidAuth
+        return Response(status_code=status.HTTP_401_UNAUTHORIZED)

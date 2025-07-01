@@ -24,7 +24,7 @@ async def login():
         client_id=client_id,
         client_secret=client_secret,
         redirect_uri=redirect_uri,
-        scope="user-read-email user-read-private offline-access"
+        scope="user-read-email user-read-private"
     ) as sso:
         return await sso.get_login_redirect()
 
