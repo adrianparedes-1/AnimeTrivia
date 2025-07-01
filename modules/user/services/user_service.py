@@ -42,10 +42,10 @@ def save_in_redis(user_id: str,
     r.setex(f"{user_id}:spotify_refresh_token:", 86400, spotify_refresh_token)
 
     # uncomment to print values
-    # keys = r.keys(f"{user_id}:*")
-    # for key in keys:
-    #     value = r.get(key)
-    #     print(f"{key} => {value}")
+    keys = r.keys(f"{user_id}:*")
+    for key in keys:
+        value = r.get(key)
+        print(f"{key} => {value}")
 
 # async def exchange_code_token(code: str):
 #     async with httpx.AsyncClient() as client:
