@@ -1,5 +1,6 @@
 # import httpx, base64
 from modules.user.dtos.user_create_dto import UserCreateDTO
+from modules.user.dtos.user_response_dto import UserResponseDTO, UserAuthResponse
 from modules.user.models.user_model import UserORM
 from db.session_manager import get_db
 import redis
@@ -10,7 +11,7 @@ import redis
 # )
 
 
-def create(user: UserCreateDTO) -> UserORM:
+def create(user: UserCreateDTO) -> UserAuthResponse:
     db_gen = get_db()  # this is a generator
     db = next(db_gen)  # this gets the actual session instance
     
@@ -32,7 +33,14 @@ def create(user: UserCreateDTO) -> UserORM:
     
     print(user_db)
 
-    return user_db
+    # Convert ORM to Pydantic DTO
+    user_dto = UserAuthResponse(
+        id=user_db.id,
+        username=user_db.username,
+        email=user_db.email,
+        display_name=user_db.display_name
+    )
+    return user_dto
 
 def save_in_redis(user_id: str, 
             app_access_token,
