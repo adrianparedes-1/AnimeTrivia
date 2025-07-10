@@ -1,4 +1,4 @@
-from fastapi import FastAPI, APIRouter, Request, status
+from fastapi import FastAPI, APIRouter, Request, status, Response
 from starlette.middleware.cors import CORSMiddleware
 from modules.user.routers import auth_router
 from modules.menu.routers import menu_router
@@ -18,7 +18,7 @@ app.include_router(menu_router.router)
 
 @app.middleware("http")
 async def auth_user(request: Request, call_next):
-    public_paths = ["/auth", "/docs", "/openapi.json"]
+    public_paths = ["/auth", "/auth/callback", "/auth/complete", "/docs", "/openapi.json"]
 
     if request.method == "OPTIONS":
         return await call_next(request)
@@ -29,10 +29,11 @@ async def auth_user(request: Request, call_next):
 
     # otherwise, get the token from the header and validate it
     token = request.headers.get("authorization")
+    # print(request.headers)
     response = check_token(token)
     
-    # if the token validation is not successful, return the response from check_token which contains the error
-    if response.status_code != status.HTTP_200_OK: 
+    # if the token validation is not successful, return the response from check_token which contains the error in the form of a Response object
+    if response is Response: 
         return response
 
     # if the token validation is successful (200 OK), then go on to the route and pass the decoded token (response)
