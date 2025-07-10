@@ -16,8 +16,6 @@ async def profile(request: Request):
         '''
         service should get the user id that matches the one in db and search for it. once found, set a return dto to response
         we are doing async because we need to wait for the fetch operation to complete before we return anything
-
-        add the user id to the user key in request.state
         '''
         await ...
 
