@@ -1,4 +1,6 @@
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Request, Response, status
+from fastapi.responses import RedirectResponse
+from fastapi.datastructures import URL
 from modules.menu.dtos import player_profile_dto
 from modules.menu.services.profile_service import show_profile
 
@@ -14,11 +16,6 @@ router = APIRouter(
     tags=["Menu"]
 )
 
-# @router.get("")
-# def test():
-#     return "placeholder for frontend endpoint"
-
-
 '''
 in the profile endpoint, i'm assuming the middleware has already been set and the token is being sent properly from the frontend.
     This is the middleware logic that extracts the token and checks it: 
@@ -27,16 +24,19 @@ in the profile endpoint, i'm assuming the middleware has already been set and th
 
 check_token returns a decoded token which i need to get the username from the payload
 
-
 '''
+
+@router.get("/")
+def read_profile(request: Request):
+    return {"user": request.state.user}
+
 
 @router.get("/profile")
 async def profile(request: Request):
-    async with show_profile(request.body("username")) as profile: # this is just to wait for the username to be extracted from the jwt
-        ...
+    return RedirectResponse(
+            url=URL("/profile")
+        )
 
-@router.get("")
-async def read_profile(request: Request):
-    current_user = getattr(request.state, "user", None)
-    print(f"Decoded user from token: {current_user}")
-    return {"user": current_user}
+@router.get("/play")
+def read_profile(request: Request):
+    return {"user": request.state.user}

@@ -49,6 +49,10 @@ def check_token(token) -> dict:
             }
         )
         return decoded  # Return the decoded dict directly
+    
+
+    # TODO: remove dependency on fastapi from this service. I will need to adjust validation logic in middleware as well btw.
+
     except ExpiredSignatureError as e:
         print(f"Token expired: {str(e)}")
         return Response(status_code=status.HTTP_401_UNAUTHORIZED)

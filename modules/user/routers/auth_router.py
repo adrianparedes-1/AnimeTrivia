@@ -50,7 +50,7 @@ async def callback(request: Request):
     # print(f"Test ------------- {app_access_token}")
     # print(f"Test ------------- {app_refresh_token}")
     # save all tokens in redis
-    if user and app_access_token:
+    if app_access_token and app_refresh_token:
         save_in_redis(
             user.id,
             app_access_token,

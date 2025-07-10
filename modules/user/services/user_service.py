@@ -11,23 +11,29 @@ from typing import Dict
 # )
 
 
-def create(user: UserCreateDTO) -> None: ###### return the user model from db
+def create(user: UserCreateDTO) -> UserORM:
     db_gen = get_db()  # this is a generator
     db = next(db_gen)  # this gets the actual session instance
     
-    query = db.query(UserORM).filter(
+    
+    user_db = db.query(UserORM).filter(
         UserORM.email == user.email,
         UserORM.username == user.id
     ).first()
 
-    if not query:
-        user_orm = UserORM(
+    if not user_db:
+        user_db = UserORM(
             username=user.id,
             email=user.email,
             display_name=user.display_name
         )
-        db.add(user_orm)
+        db.add(user_db)
         db.commit()
+        db.refresh(user_db)  # ensures user_db has up-to-date info from DB
+    
+    print(user_db)
+
+    return user_db
 
 def save_in_redis(user_id: str, 
             app_access_token,
