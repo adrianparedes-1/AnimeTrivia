@@ -3,7 +3,6 @@ from modules.user.dtos.user_create_dto import UserCreateDTO
 from modules.user.models.user_model import UserORM
 from db.session_manager import get_db
 import redis
-from typing import Dict
 # from dependencies.spotify_sso import (
 #     redirect_uri,
 #     client_id,
