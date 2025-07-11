@@ -12,16 +12,16 @@ router = APIRouter(
 
 @router.get("")
 def profile(request: Request):
-    print(request.state.user)
+    # print(request.state.user)
     profile = show_profile(request.state.user)
     return profile
 
 
-@router.post("")
-def log_out(request: Request):
-    ...
-    '''
-    delete tokens from redis
-    log activity
-    redirect to login url
-    '''
+# @router.post("")
+# def log_out(request: Request):
+#     ...
+#     '''
+#     delete tokens from redis
+#     log activity
+#     redirect to login url
+#     '''

@@ -26,12 +26,12 @@ check_token returns a decoded token which i need to get the username from the pa
 
 '''
 
-@router.get("/")
-def read_profile(request: Request):
-    return {"user": request.state.user}
+# @router.get("/")
+# def read_profile(request: Request):
+#     return {"user": request.state.user}
 
 
-@router.get("/profile")
+@router.get("")
 async def profile(request: Request):
     return RedirectResponse(
             url=URL("/profile")

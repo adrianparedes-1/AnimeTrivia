@@ -4,19 +4,19 @@ There should probably be a uuid for the player which we can pass rather than pas
 '''
 
 from modules.menu.dtos.player_profile_dto import PlayerProfileDTO
-from modules.user.models.user_model import UserORM
+from modules.menu.models.profile_model import ProfileORM
 from db.session_manager import get_db
 
 
 def show_profile(profile) -> PlayerProfileDTO:
     db_gen = get_db()  # this is a generator
     db = next(db_gen)  # this gets the actual session instance
-    print(profile)
-    # query = db.query(UserORM).filter(
-    #     UserORM.username == profile.id
-    # ).first()
+    user_profile = db.query(ProfileORM).filter(
+        ProfileORM.email == profile["email"],
+        ProfileORM.id == profile["id"]
+    ).first()
 
-    # if not query:
-    #     return "user not found"
+    if not user_profile:
+        return "user not found"
     
-    return profile
+    return user_profile
