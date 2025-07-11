@@ -4,7 +4,6 @@ from modules.user.dtos.user_response_dto import UserResponseDTO, UserAuthRespons
 from modules.user.models.user_model import UserORM
 from modules.menu.models.profile_model import ProfileORM
 from db.session_manager import get_db
-import redis
 # from dependencies.spotify_sso import (
 #     redirect_uri,
 #     client_id,
@@ -59,10 +58,10 @@ def save_in_redis(user_id: str,
             spotify_refresh_token
             ):
     r = redis.Redis(host='localhost', port=6379, decode_responses=True)
-    r.setex(f"{user_id}:app_access_token:", 3600, app_access_token)
-    r.setex(f"{user_id}:app_refresh_token:", 86400, app_refresh_token)
-    r.setex(f"{user_id}:spotify_access_token:", 3600, spotify_access_token)
-    r.setex(f"{user_id}:spotify_refresh_token:", 86400, spotify_refresh_token)
+    r.setex(f"{user_id}:app_access_token", 3600, app_access_token)
+    r.setex(f"{user_id}:app_refresh_token", 86400, app_refresh_token)
+    r.setex(f"{user_id}:spotify_access_token", 3600, spotify_access_token)
+    r.setex(f"{user_id}:spotify_refresh_token", 86400, spotify_refresh_token)
 
     # uncomment to print values
     # keys = r.keys(f"{user_id}:*")
