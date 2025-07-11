@@ -1,4 +1,4 @@
-import fnmatch
+import fnmatch, redis
 from fastapi import FastAPI, APIRouter, Request, Response
 from starlette.middleware.cors import CORSMiddleware
 from dependencies.token_service import check_token
@@ -9,7 +9,7 @@ from modules.menu.routers import (
     profile_router
 )
 
-
+r = redis.Redis(host='localhost', port=6379, decode_responses=True)
 app = FastAPI()
 admin.mount_to(app)
 router = APIRouter()
@@ -52,7 +52,7 @@ async def auth_user(request: Request, call_next):
     # otherwise, get the token from the header and validate it
     token = request.headers.get("authorization")
     # print(request.headers)
-    response = check_token(token)
+    response = check_token(token, r)
     
     # if the token validation is not successful, return the response from check_token which contains the error in the form of a Response object
     if isinstance(response, Response): 

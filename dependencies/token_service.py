@@ -1,4 +1,4 @@
-import os
+import os, redis
 from jose import ExpiredSignatureError, jwt
 from jose.exceptions import JWEInvalidAuth
 from fastapi import Response, status
@@ -34,7 +34,13 @@ def create_tokens(data: dict):
     )
     return access_token, refresh_token
     
-def check_token(token) -> dict:
+def check_token(token, r) -> dict:
+    """
+    This function check jwt token passed in the request's headers, and verifies it with the session in redis.
+    If it is valid, it returns a decoded token.
+    
+    """
+    
     if not token:
         return Response(status_code=status.HTTP_401_UNAUTHORIZED)
         
@@ -48,7 +54,12 @@ def check_token(token) -> dict:
                 "verify_exp": True
             }
         )
-        return decoded  # Return the decoded dict directly
+
+        r_token = r.get(f"{decoded['username']}:app_access_token")
+        if not r_token or token != r_token:
+            return Response(status_code=status.HTTP_401_UNAUTHORIZED)
+        else:
+            return decoded  # Return the decoded dict directly
     
 
     # TODO: remove dependency on fastapi from this service. I will need to adjust validation logic in middleware as well btw.
