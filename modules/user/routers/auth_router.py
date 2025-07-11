@@ -40,13 +40,13 @@ async def callback(request: Request):
         user = await sso.verify_and_process(request)
 
     # save user in db
-    create(user)
+    user_db = create(user)
     # initialize local variables to save spotify tokens
     spotify_access_token = sso._custom_access_token
     spotify_refresh_token = sso._custom_refresh_token
     
     # create backend tokens
-    app_access_token, app_refresh_token = create_tokens(user.model_dump())
+    app_access_token, app_refresh_token = create_tokens(user_db.model_dump())
     # print(f"Test ------------- {app_access_token}")
     # print(f"Test ------------- {app_refresh_token}")
     # save all tokens in redis

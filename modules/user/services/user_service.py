@@ -1,6 +1,8 @@
 # import httpx, base64
 from modules.user.dtos.user_create_dto import UserCreateDTO
+from modules.user.dtos.user_response_dto import UserResponseDTO, UserAuthResponse
 from modules.user.models.user_model import UserORM
+from modules.menu.models.profile_model import ProfileORM
 from db.session_manager import get_db
 import redis
 # from dependencies.spotify_sso import (
@@ -10,29 +12,45 @@ import redis
 # )
 
 
-def create(user: UserCreateDTO) -> UserORM:
+def create(user: UserCreateDTO) -> UserAuthResponse:
     db_gen = get_db()  # this is a generator
     db = next(db_gen)  # this gets the actual session instance
     
     
-    user_db = db.query(UserORM).filter(
+    query = db.query(UserORM).filter(
         UserORM.email == user.email,
         UserORM.username == user.id
     ).first()
 
-    if not user_db:
-        user_db = UserORM(
+    if not query:
+        user_orm = UserORM(
             username=user.id,
             email=user.email,
             display_name=user.display_name
         )
-        db.add(user_db)
+        profile_orm = ProfileORM(
+            username=user.id,
+            email=user.email,
+            display_name=user.display_name
+        )
+        db.add_all()
         db.commit()
-        db.refresh(user_db)  # ensures user_db has up-to-date info from DB
-    
+        db.refresh(user_orm)
+        db.refresh(profile_orm)
+        user_db = user_orm
+    else:
+        user_db = query
+
     print(user_db)
 
-    return user_db
+    # Convert ORM to Pydantic DTO
+    user_dto = UserAuthResponse(
+        id=user_db.id,
+        username=user_db.username,
+        email=user_db.email,
+        display_name=user_db.display_name
+    )
+    return user_dto
 
 def save_in_redis(user_id: str, 
             app_access_token,

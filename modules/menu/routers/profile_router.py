@@ -11,20 +11,17 @@ router = APIRouter(
 )
 
 @router.get("")
-async def profile(request: Request):
-    async with show_profile(request.state.user) as profile:
-        '''
-        service should get the user id that matches the one in db and search for it. once found, set a return dto to response
-        we are doing async because we need to wait for the fetch operation to complete before we return anything
-        '''
-        await ...
+def profile(request: Request):
+    # print(request.state.user)
+    profile = show_profile(request.state.user)
+    return profile
 
 
-@router.post("")
-def log_out(request: Request):
-    ...
-    '''
-    delete tokens from redis
-    log activity
-    redirect to login url
-    '''
+# @router.post("")
+# def log_out(request: Request):
+#     ...
+#     '''
+#     delete tokens from redis
+#     log activity
+#     redirect to login url
+#     '''
