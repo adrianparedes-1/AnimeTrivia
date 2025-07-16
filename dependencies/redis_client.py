@@ -10,7 +10,12 @@ def delete_keys_containing(user_id):
     """
     Delete all keys in Redis containing the given substring.
     """
+    cursor = 0
     r = get_client()
-    keys = r.keys(f"{user_id}:*")
-    if keys:
-        r.delete(*keys)
+    while True:
+        cursor, keys = r.scan(cursor=cursor, match=f"{user_id}*", count=1000)
+        if keys:
+            r.delete(*keys)
+            print(f"Deleted keys: {keys}")
+        if cursor == 0:
+            break
