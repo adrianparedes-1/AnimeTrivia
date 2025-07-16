@@ -57,8 +57,7 @@ async def callback(request: Request):
             app_access_token,
             app_refresh_token,
             spotify_access_token,
-            spotify_refresh_token,
-            redis_client = Depends(get_client())
+            spotify_refresh_token
             )
 
     # redirect to complete endpoint
