@@ -55,7 +55,7 @@ def check_token(token, r) -> dict:
             }
         )
 
-        r_token = r.get(f"{decoded['username']}:app_access_token")
+        r_token = r.get(f"{decoded['id']}:app_access_token")
         if not r_token or token != r_token:
             return Response(status_code=status.HTTP_401_UNAUTHORIZED)
         else:

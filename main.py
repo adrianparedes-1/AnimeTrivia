@@ -9,7 +9,7 @@ from modules.menu.routers import (
     profile_router
 )
 
-r = redis.Redis(host='localhost', port=6379, decode_responses=True)
+r = redis.Redis(host='localhost', port=6379, decode_responses=True) # middleware oauth flow
 app = FastAPI()
 admin.mount_to(app)
 router = APIRouter()

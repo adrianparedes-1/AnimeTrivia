@@ -3,6 +3,7 @@ from fastapi.responses import RedirectResponse
 from fastapi.datastructures import URL
 from modules.menu.dtos import player_profile_dto
 from modules.menu.services.profile_service import show_profile
+from dependencies.redis_client import delete_keys_containing
 
 
 router = APIRouter(
@@ -17,11 +18,9 @@ def profile(request: Request):
     return profile
 
 
-# @router.post("")
-# def log_out(request: Request):
-#     ...
-#     '''
-#     delete tokens from redis
-#     log activity
-#     redirect to login url
-#     '''
+@router.get("/logout")
+def log_out(request: Request):
+    delete_keys_containing(request.state.user["id"])
+    return status.HTTP_200_OK
+
+# TODO: add activity logs

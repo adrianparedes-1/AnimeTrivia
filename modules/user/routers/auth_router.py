@@ -53,7 +53,7 @@ async def callback(request: Request):
     # save all tokens in redis
     if app_access_token and app_refresh_token:
         save_in_redis(
-            user.id,
+            user_db.id,
             app_access_token,
             app_refresh_token,
             spotify_access_token,
