@@ -41,8 +41,6 @@ def create(user: UserCreateDTO) -> UserAuthResponse:
     else:
         user_db = query
 
-    print(user_db)
-
     # Convert ORM to Pydantic DTO
     user_dto = UserAuthResponse(
         id=user_db.id,
