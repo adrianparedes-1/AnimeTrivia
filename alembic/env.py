@@ -8,7 +8,17 @@ import os
 from dotenv import load_dotenv
 from modules.user.models import user_model
 from modules.menu.models import profile_model
-from modules.anime.models import anime_orm_model
+from modules.anime.models import (
+    anime_orm_model,
+    endings_orm_model,
+    openings_orm_model,
+    themes_orm_model,
+    images_orm_model,
+    studios_orm_model,
+    titles_orm_model,
+    trailer_orm_model,
+    genres_orm_model
+)
 
 load_dotenv()
 db_uri = os.getenv("DATABASE_URI")
