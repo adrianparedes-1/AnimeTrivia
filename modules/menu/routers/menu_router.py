@@ -1,8 +1,6 @@
-from fastapi import APIRouter, Depends, Request, Response, status
+from fastapi import APIRouter, Request
 from fastapi.responses import RedirectResponse
 from fastapi.datastructures import URL
-from modules.menu.dtos import player_profile_dto
-from modules.menu.services.profile_service import show_profile
 
 '''
 main menu: 

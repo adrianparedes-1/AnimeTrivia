@@ -1,7 +1,4 @@
-from fastapi import APIRouter, Depends, Request, Response, status
-from fastapi.responses import RedirectResponse
-from fastapi.datastructures import URL
-from modules.menu.dtos import player_profile_dto
+from fastapi import APIRouter, Request, status
 from modules.menu.services.profile_service import show_profile
 from dependencies.redis_client import delete_keys_containing
 
