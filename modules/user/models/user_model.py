@@ -1,11 +1,10 @@
 from datetime import datetime
 from db.base_orm_model import Base
-# from modules.menu.models.profile_model import ProfileORM
-from sqlalchemy import Integer, ForeignKey, String, func
+from sqlalchemy import Integer, String, func
 from sqlalchemy.orm import Mapped, mapped_column
 
 
-class UserORM(Base):
+class User(Base):
     __tablename__ = "user"
     
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
@@ -15,4 +14,3 @@ class UserORM(Base):
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
     deleted_at: Mapped[datetime] = mapped_column(server_default=None, nullable=True)
     updated_at: Mapped[datetime] = mapped_column(server_default=func.now(), onupdate=func.current_timestamp())
-    profile_id: Mapped[int] = mapped_column(Integer, ForeignKey('profile.id'), server_default=None)

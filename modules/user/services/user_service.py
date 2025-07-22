@@ -1,8 +1,8 @@
 # import httpx, base64
 from modules.user.dtos.user_create_dto import UserCreateDTO
-from modules.user.dtos.user_response_dto import UserResponseDTO, UserAuthResponse
-from modules.user.models.user_model import UserORM
-from modules.menu.models.profile_model import ProfileORM
+from modules.user.dtos.user_response_dto import UserAuthResponse
+from modules.user.models.user_model import User
+from modules.menu.models.profile_model import Profile
 from db.session_manager import get_db
 from dependencies.redis_client import get_client
 # from dependencies.spotify_sso import (
@@ -13,42 +13,43 @@ from dependencies.redis_client import get_client
 
 
 def create(user: UserCreateDTO) -> UserAuthResponse:
-    db_gen = get_db()  # this is a generator
-    db = next(db_gen)  # this gets the actual session instance
-    
-    
-    query = db.query(UserORM).filter(
-        UserORM.email == user.email,
-        UserORM.username == user.id
-    ).first()
+    with next(get_db()) as db:
+        query_existing = db.query(User).filter(
+            User.email == user.email,
+            User.username == user.id
+        ).first()
 
-    if not query:
-        user_orm = UserORM(
-            username=user.id,
-            email=user.email,
-            display_name=user.display_name
-        )
-        profile_orm = ProfileORM(
-            username=user.id,
-            email=user.email,
-            display_name=user.display_name
-        )
-        db.add_all()
-        db.commit()
-        db.refresh(user_orm)
-        db.refresh(profile_orm)
-        user_db = user_orm
-    else:
-        user_db = query
+        if not query_existing:
+            user_orm = User(
+                username=user.id,
+                email=user.email,
+                display_name=user.display_name
+            )
+            profile_orm = Profile(
+                username=user.id,
+                email=user.email,
+                display_name=user.display_name,
+                user=user_orm
+            )
+            db.add_all(instances=[user_orm, profile_orm])
+            try:
+                db.commit() # commit to db
+            except Exception:
+                db.rollback() # if there is any issue, rollback to clean state
+                raise # since we will be rolling back, we need to let the error handler that there was an issue, so we raise an error with the traceback
+            db.refresh(user_orm)
+            user_db = user_orm
+        else:
+            user_db = query_existing
 
-    # Convert ORM to Pydantic DTO
-    user_dto = UserAuthResponse(
-        id=user_db.id,
-        username=user_db.username,
-        email=user_db.email,
-        display_name=user_db.display_name
-    )
-    return user_dto
+        # convert to dto
+        return UserAuthResponse(
+            id=user_db.id,
+            username=user_db.username,
+            email=user_db.email,
+            display_name=user_db.display_name
+        )
+
 
 def save_in_redis(user_id, 
             app_access_token,
