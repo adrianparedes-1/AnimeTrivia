@@ -1,7 +1,6 @@
 from dto.base_dto import Base
 from pydantic import Field
 from typing import List, Optional
-from modules.anime.dtos.themes_dto import ThemesDto
 from modules.anime.dtos.trailer_dto import TrailerDto
 from modules.anime.dtos.titles_dto import TitlesDto
 from modules.anime.dtos.genres_dto import GenresDto
@@ -15,14 +14,18 @@ class AnimeDto(Base):
     score: float
     scored_by: int
     popularity: int
-    times_favorited: int
-    members_MAL: int
+    times_favorited: int = Field(alias="favorites")
+    members_MAL: int = Field(alias="members")
     synopsis: str
-    release_year: int
-    release_season: str
-    themes: Optional[List[ThemesDto]] = Field(default=None)
-    trailer: TrailerDto
+    release_year: Optional[int] = Field(alias="year", default=None)
+    release_season: Optional[str] = Field(alias="season", default=None)
+    topical_themes: Optional[List[dict]] = Field(alias="themes", default=None)
+    trailer: Optional[TrailerDto]
     titles: List[TitlesDto]
     genres: List[GenresDto]
     studios: List[StudiosDto]
-    images: List[ImagesDto]
+    images: ImagesDto
+
+
+class Data(Base):
+    animes: List[AnimeDto] = Field(alias="data")

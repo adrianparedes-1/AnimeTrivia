@@ -9,7 +9,8 @@ from modules.anime.models import (
     titles_orm_model,
     genres_orm_model,
     studios_orm_model,
-    images_orm_model
+    images_orm_model,
+    topical_themes_orm_model
 )
 from typing import List
 
@@ -32,8 +33,11 @@ class Anime(Base):
     deleted_at: Mapped[datetime] = mapped_column(server_default=None, nullable=True)
     updated_at: Mapped[datetime] = mapped_column(server_default=func.now(), onupdate=func.current_timestamp())
 
+    topical_theme_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey('topical_themes.id'), server_default=None)
+    topical_themes: Mapped[List["topical_themes_orm_model.TopicalThemes"]] = relationship()
+
     theme_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey('themes.id'), server_default=None)
-    themes: Mapped[List["themes_orm_model.Themes"]] = relationship()
+    musical_themes: Mapped[List["themes_orm_model.Themes"]] = relationship()
 
     trailer_id: Mapped[int] = mapped_column(Integer, ForeignKey('trailer.id'), server_default=None)
     trailer: Mapped["trailer_orm_model.Trailer"] = relationship()

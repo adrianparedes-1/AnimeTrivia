@@ -11,7 +11,8 @@ from modules.anime.models import (
     studios_orm_model,
     titles_orm_model,
     trailer_orm_model,
-    genres_orm_model
+    genres_orm_model,
+    topical_themes_orm_model
 )
 
 

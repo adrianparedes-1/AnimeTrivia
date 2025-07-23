@@ -3,5 +3,6 @@ from pydantic import HttpUrl
 
 
 class ImagesDto(Base):
-    small_image: HttpUrl
-    large_image: HttpUrl
+    # small_image: HttpUrl
+    # large_image: HttpUrl
+    jpg: dict
