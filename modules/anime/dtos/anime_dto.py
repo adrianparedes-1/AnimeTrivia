@@ -1,14 +1,16 @@
 from dto.base_dto import Base
-from typing import List
-from dtos.themes_dto import Themes
-from dtos.trailer_dto import Trailer
-from dtos.titles_dto import Titles
-from dtos.genres_dto import Genres
-from dtos.studios_dto import Studios
-from dtos.images_dto import Images
+from pydantic import Field
+from typing import List, Optional
+from modules.anime.dtos.themes_dto import ThemesDto
+from modules.anime.dtos.trailer_dto import TrailerDto
+from modules.anime.dtos.titles_dto import TitlesDto
+from modules.anime.dtos.genres_dto import GenresDto
+from modules.anime.dtos.studios_dto import StudiosDto
+from modules.anime.dtos.images_dto import ImagesDto
 
-class Anime(Base):
+class AnimeDto(Base):
     title: str
+    mal_id: int
     rank: int
     score: float
     scored_by: int
@@ -18,9 +20,9 @@ class Anime(Base):
     synopsis: str
     release_year: int
     release_season: str
-    themes: List[Themes]
-    trailer: Trailer
-    titles: List[Titles]
-    genres: List[Genres]
-    studios: List[Studios]
-    images: List[Images]
+    themes: Optional[List[ThemesDto]] = Field(default=None)
+    trailer: TrailerDto
+    titles: List[TitlesDto]
+    genres: List[GenresDto]
+    studios: List[StudiosDto]
+    images: List[ImagesDto]

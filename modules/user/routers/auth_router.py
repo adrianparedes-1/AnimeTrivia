@@ -1,8 +1,7 @@
-from fastapi import APIRouter, Request, Depends
+from fastapi import APIRouter, Request
 from fastapi.responses import RedirectResponse
 from fastapi.datastructures import URL
 from dependencies.token_service import create_tokens
-from dependencies.redis_client import get_client
 from dependencies.spotify_sso import (
     client_id,
     client_secret,
@@ -67,7 +66,7 @@ async def callback(request: Request):
 
 # redirect to menu router
 @router.get("/complete")
-async def get_token():
+def get_token():
     return RedirectResponse(
         url=URL("/home")
     )

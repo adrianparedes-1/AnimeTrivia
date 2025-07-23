@@ -5,7 +5,7 @@ from dependencies.redis_client import delete_keys_containing
 
 router = APIRouter(
     prefix="/profile", 
-    tags=["Player Profile"]
+    tags=["Profile"]
 )
 
 @router.get("")
