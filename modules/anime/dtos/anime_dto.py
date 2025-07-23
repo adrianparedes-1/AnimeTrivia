@@ -6,6 +6,7 @@ from modules.anime.dtos.titles_dto import TitlesDto
 from modules.anime.dtos.genres_dto import GenresDto
 from modules.anime.dtos.studios_dto import StudiosDto
 from modules.anime.dtos.images_dto import ImagesDto
+from modules.anime.dtos.topical_themes_dto import TopicalThemesDto
 
 class AnimeDto(Base):
     title: str
@@ -19,13 +20,12 @@ class AnimeDto(Base):
     synopsis: str
     release_year: Optional[int] = Field(alias="year", default=None)
     release_season: Optional[str] = Field(alias="season", default=None)
-    topical_themes: Optional[List[dict]] = Field(alias="themes", default=None)
+    topical_themes: Optional[List[TopicalThemesDto]] = Field(alias="themes", default=None)
     trailer: Optional[TrailerDto]
     titles: List[TitlesDto]
     genres: List[GenresDto]
     studios: List[StudiosDto]
     images: ImagesDto
-
 
 class Data(Base):
     animes: List[AnimeDto] = Field(alias="data")
