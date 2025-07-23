@@ -1,5 +1,5 @@
 from dto.base_dto import Base
 
-class Titles(Base):
+class TitlesDto(Base):
     type: str
     title: str

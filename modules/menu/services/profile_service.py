@@ -13,10 +13,12 @@ def show_profile(profile) -> PlayerProfileDTO:
     db = next(db_gen)  # this gets the actual session instance
     user_profile = db.query(Profile).filter(
         Profile.email == profile["email"],
-        Profile.id == profile["id"]
+        Profile.username == profile["username"] # workaround for now but will go back to id
     ).first()
+    print(profile)
+    print(user_profile)
 
     if not user_profile:
-        return "user not found"
+        return "profile not found"
     
     return user_profile

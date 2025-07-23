@@ -3,6 +3,9 @@ from fastapi import FastAPI, APIRouter, Request, Response
 from starlette.middleware.cors import CORSMiddleware
 from dependencies.token_service import check_token
 from dependencies.admin import admin
+from modules.anime.routers import (
+    anime_router
+)
 from modules.user.routers import auth_router
 from modules.menu.routers import (
     menu_router,
@@ -24,6 +27,7 @@ app.add_middleware(
 app.include_router(auth_router.router)
 app.include_router(menu_router.router)
 app.include_router(profile_router.router)
+app.include_router(anime_router.router)
 
 @app.middleware("http")
 async def auth_user(request: Request, call_next):

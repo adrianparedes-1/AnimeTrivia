@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Optional
 from db.base_orm_model import Base
 from sqlalchemy import Integer, String, Float, Text, func, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -16,6 +17,7 @@ class Anime(Base):
     __tablename__ = "anime"
     
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    mal_id: Mapped[int] = mapped_column(Integer, server_default=None)
     title: Mapped[str] = mapped_column(String(300))
     rank: Mapped[int] = mapped_column(Integer, unique=True)
     score: Mapped[float] = mapped_column(Float)
@@ -30,7 +32,7 @@ class Anime(Base):
     deleted_at: Mapped[datetime] = mapped_column(server_default=None, nullable=True)
     updated_at: Mapped[datetime] = mapped_column(server_default=func.now(), onupdate=func.current_timestamp())
 
-    theme_id: Mapped[int] = mapped_column(Integer, ForeignKey('themes.id'), server_default=None)
+    theme_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey('themes.id'), server_default=None)
     themes: Mapped[List["themes_orm_model.Themes"]] = relationship()
 
     trailer_id: Mapped[int] = mapped_column(Integer, ForeignKey('trailer.id'), server_default=None)

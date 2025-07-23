@@ -1,4 +1,4 @@
 from dto.base_dto import Base
 
-class Openings(Base):
+class OpeningsDto(Base):
     title: str

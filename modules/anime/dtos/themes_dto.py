@@ -1,8 +1,8 @@
 from dto.base_dto import Base
 from typing import List
-from dtos.openings_dto import Openings
-from dtos.endings_dto import Endings
+from modules.anime.dtos.openings_dto import OpeningsDto
+from modules.anime.dtos.endings_dto import EndingsDto
 
-class Themes(Base):
-    openings: List[Openings]
-    endings: List[Endings]
+class ThemesDto(Base):
+    openings: List[OpeningsDto]
+    endings: List[EndingsDto]
