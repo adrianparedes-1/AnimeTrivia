@@ -1,17 +1,17 @@
 from datetime import datetime
-from typing import Optional
 from db.base_orm_model import Base
-from sqlalchemy import Integer, func, ForeignKey, String
 from modules.anime.models.anime_orm_model import Anime
+from sqlalchemy import Integer, func, ForeignKey, String
+from typing import Optional
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+from modules.anime.models.anime_orm_model import Anime
 
-class Trailer(Base):
-    __tablename__ = "trailer"
+class Title(Base):
+    __tablename__ = "title"
     
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    url: Mapped[str] = mapped_column(String(100), server_default=None)
-    embed_url: Mapped[str] = mapped_column(String(100), server_default=None)
-    youtube_id: Mapped[str] = mapped_column(String(100), server_default=None)
+    type: Mapped[str] = mapped_column(String(50), server_default=None)
+    title: Mapped[str] = mapped_column(String(300), server_default=None)
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
     deleted_at: Mapped[datetime] = mapped_column(server_default=None, nullable=True)
     updated_at: Mapped[datetime] = mapped_column(server_default=func.now(), onupdate=func.current_timestamp())

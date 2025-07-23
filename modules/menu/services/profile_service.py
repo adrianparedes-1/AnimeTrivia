@@ -15,8 +15,6 @@ def show_profile(profile) -> PlayerProfileDTO:
         Profile.email == profile["email"],
         Profile.username == profile["username"] # workaround for now but will go back to id
     ).first()
-    print(profile)
-    print(user_profile)
 
     if not user_profile:
         return "profile not found"
