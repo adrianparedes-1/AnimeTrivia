@@ -2,7 +2,7 @@ import httpx, asyncio
 from db.session_manager import get_db
 from modules.anime.models import (
     anime_orm_model,
-    endings_orm_model,
+    ending_orm_model,
     genre_orm_model,
     image_orm_model,
     opening_orm_model,
@@ -28,19 +28,21 @@ the page as the counter. Once it reaches 21, then exist.
 '''
 def construct_orm_model(anime_dto: AnimeDto) -> anime_orm_model.Anime:
     return anime_orm_model.Anime (
-        **anime_dto.model_dump(exclude=["topical_themes",
+        **anime_dto.model_dump(
+            exclude=["topical_themes",
                                         "trailer",
                                         "titles",
                                         "genres",
                                         "studios",
                                         "images",
                                         ]),
-        topical_themes=[topical_theme_orm_model.TopicalThemes(**t.model_dump()) for t in anime_dto.topical_themes] if anime_dto.topical_themes else [],
-        trailer=trailer_orm_model.Trailer(**anime_dto.trailer.model_dump()) if anime_dto.trailer else None,
-        titles=[title_orm_model.Titles(**t.model_dump()) for t in anime_dto.titles] if anime_dto.titles else [],
-        genres=[genre_orm_model.Genres(**g.model_dump()) for g in anime_dto.genres] if anime_dto.genres else [],
-        studios=[studio_orm_model.Studios(**s.model_dump()) for s in anime_dto.studios] if anime_dto.studios else [],
-        images=image_orm_model.Images(**anime_dto.images.model_dump()) if anime_dto.images else None
+        # rank=anime_dto.rank if anime_dto.rank is not
+        # topical_themes=[topical_theme_orm_model.TopicalTheme(**t.model_dump()) for t in anime_dto.topical_themes] if anime_dto.topical_themes else [],
+        # trailer=trailer_orm_model.Trailer(**anime_dto.trailer.model_dump()) if anime_dto.trailer else None,
+        # titles=[title_orm_model.Title(**t.model_dump()) for t in anime_dto.titles] if anime_dto.titles else [],
+        # genres=[genre_orm_model.Genre(**g.model_dump()) for g in anime_dto.genres] if anime_dto.genres else [],
+        # studios=[studio_orm_model.Studio(**s.model_dump()) for s in anime_dto.studios] if anime_dto.studios else [],
+        # images=image_orm_model.Image(**anime_dto.images.jpg.model_dump()) if anime_dto.images.jpg else None
     )
 
 

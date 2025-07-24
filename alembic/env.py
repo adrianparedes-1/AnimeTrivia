@@ -10,15 +10,15 @@ from modules.user.models import user_model
 from modules.menu.models import profile_model
 from modules.anime.models import (
     anime_orm_model,
-    endings_orm_model,
-    openings_orm_model,
-    themes_orm_model,
-    images_orm_model,
-    studios_orm_model,
-    titles_orm_model,
-    trailer_orm_model,
-    genres_orm_model,
-    topical_themes_orm_model
+    ending_orm_model,
+    genre_orm_model,
+    image_orm_model,
+    opening_orm_model,
+    studio_orm_model,
+    theme_orm_model,
+    title_orm_model,
+    topical_theme_orm_model,
+    trailer_orm_model
 )
 
 load_dotenv()
