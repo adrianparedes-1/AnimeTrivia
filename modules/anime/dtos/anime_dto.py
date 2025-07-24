@@ -11,7 +11,7 @@ from modules.anime.dtos.topical_themes_dto import TopicalThemesDto
 class AnimeDto(Base):
     title: str
     mal_id: int
-    rank: int
+    rank: Optional[int]
     score: float
     scored_by: int
     popularity: int

@@ -1,6 +1,5 @@
 from datetime import datetime
 from db.base_orm_model import Base
-from modules.anime.models.anime_orm_model import Anime
 from typing import Optional
 from sqlalchemy import Integer, func, String, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -17,4 +16,4 @@ class Image(Base):
     updated_at: Mapped[datetime] = mapped_column(server_default=func.now(), onupdate=func.current_timestamp())
 
     anime_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey('anime.id'), server_default=None)
-    anime: Mapped["Anime"] = relationship("Anime")
+    anime: Mapped["Anime"] = relationship()
