@@ -1,10 +1,8 @@
 from datetime import datetime
 from db.base_orm_model import Base
-from modules.anime.models.theme_orm_model import Theme
 from typing import Optional
 from sqlalchemy import Integer, func, String, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from modules.anime.models.theme_orm_model import Theme
 
 class Ending(Base):
     __tablename__ = "ending"
@@ -16,4 +14,4 @@ class Ending(Base):
     updated_at: Mapped[datetime] = mapped_column(server_default=func.now(), onupdate=func.current_timestamp())
 
     theme_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey('theme.id'), server_default=None)
-    theme: Mapped["Theme"] = relationship()
+    theme: Mapped["Theme"] = relationship("Theme", back_populates="ending")

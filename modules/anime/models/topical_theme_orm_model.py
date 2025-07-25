@@ -1,10 +1,8 @@
 from datetime import datetime
 from db.base_orm_model import Base
-from modules.anime.models.anime_orm_model import Anime
 from sqlalchemy import Integer, func, ForeignKey, String
 from typing import Optional
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from modules.anime.models.anime_orm_model import Anime
 
 class TopicalTheme(Base):
     __tablename__ = "topical_theme"
@@ -16,4 +14,4 @@ class TopicalTheme(Base):
     updated_at: Mapped[datetime] = mapped_column(server_default=func.now(), onupdate=func.current_timestamp())
 
     anime_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey('anime.id'), server_default=None)
-    anime: Mapped["Anime"] = relationship()
+    anime: Mapped["Anime"] = relationship("Anime", back_populates="topical_theme")
