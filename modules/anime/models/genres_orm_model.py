@@ -1,17 +1,21 @@
 from datetime import datetime
 from db.base_orm_model import Base
-from typing import Optional
+from typing import List
+from modules.anime.models.junction_tables.anime_genres import anime_genres_table
 from sqlalchemy import Integer, func, String, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-class Ending(Base):
-    __tablename__ = "ending"
+class Genres(Base):
+    __tablename__ = "genres"
     
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    title: Mapped[str] = mapped_column(String(300), server_default=None)
+    genre: Mapped[str] = mapped_column(String(50), server_default=None)
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
     deleted_at: Mapped[datetime] = mapped_column(server_default=None, nullable=True)
     updated_at: Mapped[datetime] = mapped_column(server_default=func.now(), onupdate=func.current_timestamp())
 
-    theme_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey('theme.id'), server_default=None)
-    theme: Mapped["Theme"] = relationship("Theme", back_populates="endings")
+    animes: Mapped[List["Anime"]] = relationship(
+        "Anime",
+        secondary=anime_genres_table,
+        back_populates="genres"
+    )

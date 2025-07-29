@@ -5,12 +5,12 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from typing import Optional, List, TYPE_CHECKING
 if TYPE_CHECKING:
     from modules.anime.models.anime_orm_model import Anime
-    from modules.anime.models.opening_orm_model import Opening
-    from modules.anime.models.ending_orm_model import Ending
+    from modules.anime.models.openings_orm_model import Openings
+    from modules.anime.models.endings_orm_model import Endings
 
 
-class Theme(Base):
-    __tablename__ = "theme"
+class Themes(Base):
+    __tablename__ = "themes"
     
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
@@ -20,5 +20,5 @@ class Theme(Base):
     anime_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey('anime.id'), server_default=None)
     anime: Mapped["Anime"] = relationship("Anime", back_populates="themes")
 
-    openings: Mapped[List["Opening"]] = relationship(back_populates="theme")
-    endings: Mapped[List["Ending"]] = relationship(back_populates="theme")
+    openings: Mapped[List["Openings"]] = relationship(back_populates="theme")
+    endings: Mapped[List["Endings"]] = relationship(back_populates="theme")

@@ -3,13 +3,17 @@ from typing import Optional
 from db.base_orm_model import Base
 from sqlalchemy import Integer, String, Float, Text, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+from modules.anime.models.junction_tables.anime_studios import anime_studios_table
+from modules.anime.models.junction_tables.anime_titles import anime_titles_table
+from modules.anime.models.junction_tables.anime_genres import anime_genres_table
+from modules.anime.models.junction_tables.anime_topical_themes import anime_topical_themes_table
 from typing import List, TYPE_CHECKING
 if TYPE_CHECKING:
-    from modules.anime.models.theme_orm_model import Theme
-    from modules.anime.models.topical_theme_orm_model import TopicalTheme
-    from modules.anime.models.title_orm_model import Title
-    from modules.anime.models.genre_orm_model import Genre
-    from modules.anime.models.studio_orm_model import Studio
+    from modules.anime.models.theme_orm_model import Themes
+    from modules.anime.models.topical_themes_orm_model import TopicalThemes
+    from modules.anime.models.titles_orm_model import Titles
+    from modules.anime.models.genres_orm_model import Genres
+    from modules.anime.models.studios_orm_model import Studios
     from modules.anime.models.image_orm_model import Image
     from modules.anime.models.trailer_orm_model import Trailer
 
@@ -32,10 +36,22 @@ class Anime(Base):
     deleted_at: Mapped[datetime] = mapped_column(server_default=None, nullable=True)
     updated_at: Mapped[datetime] = mapped_column(server_default=func.now(), onupdate=func.current_timestamp())
 
-    topical_themes: Mapped[List["TopicalTheme"]] = relationship(back_populates="anime")
-    themes: Mapped[List["Theme"]] = relationship(back_populates="anime")
+    topical_themes: Mapped[List["TopicalThemes"]] = relationship(
+        secondary=anime_topical_themes_table,
+        back_populates="animes"
+        )
+    titles: Mapped[List["Titles"]] = relationship(
+        secondary=anime_titles_table,
+        back_populates="animes"
+        )
+    genres: Mapped[List["Genres"]] = relationship(
+        secondary=anime_genres_table,
+        back_populates="animes"
+        )
+    studios: Mapped[List["Studios"]] = relationship(
+        secondary=anime_studios_table,
+        back_populates="animes"
+        )
+    themes: Mapped[List["Themes"]] = relationship(back_populates="anime")
     trailer: Mapped["Trailer"] = relationship(back_populates="anime")
-    titles: Mapped[List["Title"]] = relationship(back_populates="anime")
-    genres: Mapped[List["Genre"]] = relationship(back_populates="anime")
-    studios: Mapped[List["Studio"]] = relationship(back_populates="anime")
     image: Mapped["Image"] = relationship(back_populates="anime")
