@@ -1,8 +1,8 @@
-"""fixing relationships and versions
+"""initial migration
 
-Revision ID: 3526c4a07aea
+Revision ID: 8f23a8c6afc5
 Revises: 
-Create Date: 2025-07-24 09:25:08.964736
+Create Date: 2025-07-29 16:29:04.165179
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '3526c4a07aea'
+revision: str = '8f23a8c6afc5'
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -25,23 +25,15 @@ def upgrade() -> None:
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('mal_id', sa.Integer(), nullable=False),
     sa.Column('title', sa.String(length=300), nullable=False),
-    sa.Column('rank', sa.Integer(), nullable=False),
+    sa.Column('rank', sa.Integer(), nullable=True),
     sa.Column('score', sa.Float(), nullable=False),
     sa.Column('scored_by', sa.Integer(), nullable=False),
     sa.Column('popularity', sa.Integer(), nullable=False),
     sa.Column('times_favorited', sa.Integer(), nullable=False),
     sa.Column('members_MAL', sa.Integer(), nullable=False),
     sa.Column('synopsis', sa.Text(), nullable=False),
-    sa.Column('release_year', sa.Integer(), nullable=False),
-    sa.Column('release_season', sa.String(length=50), nullable=False),
-    sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
-    sa.Column('deleted_at', sa.DateTime(), nullable=True),
-    sa.Column('updated_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
-    sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('rank')
-    )
-    op.create_table('theme',
-    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('release_year', sa.Integer(), nullable=True),
+    sa.Column('release_season', sa.String(length=50), nullable=True),
     sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
     sa.Column('deleted_at', sa.DateTime(), nullable=True),
     sa.Column('updated_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
@@ -57,17 +49,7 @@ def upgrade() -> None:
     sa.Column('updated_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
     sa.PrimaryKeyConstraint('id')
     )
-    op.create_table('ending',
-    sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('title', sa.String(length=300), nullable=False),
-    sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
-    sa.Column('deleted_at', sa.DateTime(), nullable=True),
-    sa.Column('updated_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
-    sa.Column('theme_id', sa.Integer(), nullable=True),
-    sa.ForeignKeyConstraint(['theme_id'], ['theme.id'], ),
-    sa.PrimaryKeyConstraint('id')
-    )
-    op.create_table('genre',
+    op.create_table('genres',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('genre', sa.String(length=50), nullable=False),
     sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
@@ -88,16 +70,6 @@ def upgrade() -> None:
     sa.ForeignKeyConstraint(['anime_id'], ['anime.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
-    op.create_table('opening',
-    sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('title', sa.String(length=300), nullable=False),
-    sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
-    sa.Column('deleted_at', sa.DateTime(), nullable=True),
-    sa.Column('updated_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
-    sa.Column('theme_id', sa.Integer(), nullable=True),
-    sa.ForeignKeyConstraint(['theme_id'], ['theme.id'], ),
-    sa.PrimaryKeyConstraint('id')
-    )
     op.create_table('profile',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('username', sa.String(length=50), nullable=False),
@@ -111,7 +83,7 @@ def upgrade() -> None:
     sa.ForeignKeyConstraint(['user_id'], ['user.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
-    op.create_table('studio',
+    op.create_table('studios',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('name', sa.String(length=100), nullable=False),
     sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
@@ -121,10 +93,8 @@ def upgrade() -> None:
     sa.ForeignKeyConstraint(['anime_id'], ['anime.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
-    op.create_table('title',
+    op.create_table('themes',
     sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('type', sa.String(length=50), nullable=False),
-    sa.Column('title', sa.String(length=300), nullable=False),
     sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
     sa.Column('deleted_at', sa.DateTime(), nullable=True),
     sa.Column('updated_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
@@ -132,7 +102,18 @@ def upgrade() -> None:
     sa.ForeignKeyConstraint(['anime_id'], ['anime.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
-    op.create_table('topical_theme',
+    op.create_table('titles',
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('type', sa.String(length=50), nullable=False),
+    sa.Column('name', sa.String(length=300), nullable=False),
+    sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
+    sa.Column('deleted_at', sa.DateTime(), nullable=True),
+    sa.Column('updated_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
+    sa.Column('anime_id', sa.Integer(), nullable=True),
+    sa.ForeignKeyConstraint(['anime_id'], ['anime.id'], ),
+    sa.PrimaryKeyConstraint('id')
+    )
+    op.create_table('topical_themes',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('name', sa.String(length=50), nullable=False),
     sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
@@ -144,14 +125,34 @@ def upgrade() -> None:
     )
     op.create_table('trailer',
     sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('url', sa.String(length=100), nullable=False),
-    sa.Column('embed_url', sa.String(length=100), nullable=False),
-    sa.Column('youtube_id', sa.String(length=100), nullable=False),
+    sa.Column('url', sa.String(length=100), nullable=True),
+    sa.Column('embed_url', sa.String(length=100), nullable=True),
+    sa.Column('youtube_id', sa.String(length=100), nullable=True),
     sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
     sa.Column('deleted_at', sa.DateTime(), nullable=True),
     sa.Column('updated_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
     sa.Column('anime_id', sa.Integer(), nullable=True),
     sa.ForeignKeyConstraint(['anime_id'], ['anime.id'], ),
+    sa.PrimaryKeyConstraint('id')
+    )
+    op.create_table('endings',
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('title', sa.String(length=300), nullable=False),
+    sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
+    sa.Column('deleted_at', sa.DateTime(), nullable=True),
+    sa.Column('updated_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
+    sa.Column('theme_id', sa.Integer(), nullable=True),
+    sa.ForeignKeyConstraint(['theme_id'], ['themes.id'], ),
+    sa.PrimaryKeyConstraint('id')
+    )
+    op.create_table('openings',
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('title', sa.String(length=300), nullable=False),
+    sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
+    sa.Column('deleted_at', sa.DateTime(), nullable=True),
+    sa.Column('updated_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
+    sa.Column('theme_id', sa.Integer(), nullable=True),
+    sa.ForeignKeyConstraint(['theme_id'], ['themes.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
     # ### end Alembic commands ###
@@ -160,16 +161,16 @@ def upgrade() -> None:
 def downgrade() -> None:
     """Downgrade schema."""
     # ### commands auto generated by Alembic - please adjust! ###
+    op.drop_table('openings')
+    op.drop_table('endings')
     op.drop_table('trailer')
-    op.drop_table('topical_theme')
-    op.drop_table('title')
-    op.drop_table('studio')
+    op.drop_table('topical_themes')
+    op.drop_table('titles')
+    op.drop_table('themes')
+    op.drop_table('studios')
     op.drop_table('profile')
-    op.drop_table('opening')
     op.drop_table('image')
-    op.drop_table('genre')
-    op.drop_table('ending')
+    op.drop_table('genres')
     op.drop_table('user')
-    op.drop_table('theme')
     op.drop_table('anime')
     # ### end Alembic commands ###

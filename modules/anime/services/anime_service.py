@@ -2,14 +2,14 @@ import httpx, asyncio
 from db.session_manager import get_db
 from modules.anime.models import (
     anime_orm_model,
-    ending_orm_model,
-    genre_orm_model,
+    endings_orm_model,
+    genres_orm_model,
     image_orm_model,
-    opening_orm_model,
-    studio_orm_model,
+    openings_orm_model,
+    studios_orm_model,
     theme_orm_model,
-    title_orm_model,
-    topical_theme_orm_model,
+    titles_orm_model,
+    topical_themes_orm_model,
     trailer_orm_model
 )
 from modules.anime.dtos.anime_dto import Data, AnimeDto
@@ -28,11 +28,11 @@ the page as the counter. Once it reaches 21, then exist.
 
 '''
 def construct_orm_model(anime_dto: AnimeDto) -> None:
-    topical_theme_objs = [topical_theme_orm_model.TopicalTheme(**t.model_dump()) for t in anime_dto.topical_themes] if anime_dto.topical_themes else []
+    topical_theme_objs = [topical_themes_orm_model.TopicalThemes(**t.model_dump()) for t in anime_dto.topical_themes] if anime_dto.topical_themes else []
     trailer_obj = trailer_orm_model.Trailer(**anime_dto.trailer.model_dump()) if anime_dto.trailer else None
-    title_objs = [title_orm_model.Title(**t.model_dump()) for t in anime_dto.titles] if anime_dto.titles else []
-    genre_objs=[genre_orm_model.Genre(**g.model_dump()) for g in anime_dto.genres] if anime_dto.genres else []
-    studio_objs = [studio_orm_model.Studio(**s.model_dump()) for s in anime_dto.studios] if anime_dto.studios else []
+    title_objs = [titles_orm_model.Titles(**t.model_dump()) for t in anime_dto.titles] if anime_dto.titles else []
+    genre_objs=[genres_orm_model.Genres(**g.model_dump()) for g in anime_dto.genres] if anime_dto.genres else []
+    studio_objs = [studios_orm_model.Studios(**s.model_dump()) for s in anime_dto.studios] if anime_dto.studios else []
     image_obj = image_orm_model.Image(**anime_dto.images.jpg.model_dump()) if anime_dto.images.jpg else None
     
     new_anime = anime_orm_model.Anime (
