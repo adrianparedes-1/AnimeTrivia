@@ -1,10 +1,13 @@
 from datetime import datetime
 from db.base_orm_model import Base
 from sqlalchemy import Integer, func, ForeignKey
-from modules.anime.models.opening_orm_model import Opening
-from modules.anime.models.ending_orm_model import Ending
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from typing import Optional, List
+from typing import Optional, List, TYPE_CHECKING
+if TYPE_CHECKING:
+    from modules.anime.models.anime_orm_model import Anime
+    from modules.anime.models.opening_orm_model import Opening
+    from modules.anime.models.ending_orm_model import Ending
+
 
 class Theme(Base):
     __tablename__ = "theme"
@@ -15,7 +18,7 @@ class Theme(Base):
     updated_at: Mapped[datetime] = mapped_column(server_default=func.now(), onupdate=func.current_timestamp())
 
     anime_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey('anime.id'), server_default=None)
-    anime: Mapped["Anime"] = relationship("Anime", back_populates="theme")
+    anime: Mapped["Anime"] = relationship("Anime", back_populates="themes")
 
-    opening: Mapped[List["Opening"]] = relationship(back_populates="theme")
-    ending: Mapped[List["Ending"]] = relationship(back_populates="theme")
+    openings: Mapped[List["Opening"]] = relationship(back_populates="theme")
+    endings: Mapped[List["Ending"]] = relationship(back_populates="theme")
