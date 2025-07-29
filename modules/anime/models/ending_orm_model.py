@@ -14,4 +14,4 @@ class Ending(Base):
     updated_at: Mapped[datetime] = mapped_column(server_default=func.now(), onupdate=func.current_timestamp())
 
     theme_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey('theme.id'), server_default=None)
-    theme: Mapped["Theme"] = relationship("Theme", back_populates="ending")
+    theme: Mapped["Theme"] = relationship("Theme", back_populates="endings")

@@ -14,4 +14,4 @@ class TopicalTheme(Base):
     updated_at: Mapped[datetime] = mapped_column(server_default=func.now(), onupdate=func.current_timestamp())
 
     anime_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey('anime.id'), server_default=None)
-    anime: Mapped["Anime"] = relationship("Anime", back_populates="topical_theme")
+    anime: Mapped["Anime"] = relationship("Anime", back_populates="topical_themes")

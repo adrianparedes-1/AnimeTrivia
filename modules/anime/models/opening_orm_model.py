@@ -15,4 +15,4 @@ class Opening(Base):
 
 
     theme_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey('theme.id'), server_default=None)
-    theme: Mapped["Theme"] = relationship("Theme", back_populates="opening")
+    theme: Mapped["Theme"] = relationship("Theme", back_populates="openings") 
