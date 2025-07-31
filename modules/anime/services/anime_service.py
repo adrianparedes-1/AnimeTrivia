@@ -13,6 +13,10 @@ from modules.anime.models import (
     trailer_orm_model
 )
 from modules.anime.dtos.anime_dto import Data, AnimeDto
+from modules.anime.dtos.topical_themes_dto import TopicalThemesDto
+from typing import Callable, Iterable, Type
+from sqlalchemy.orm import Session
+from sqlalchemy import Column
 MAL_URL = "https://api.jikan.moe/v4/top/anime"
 PAGES = 22 
 sleep_timer = 2
@@ -27,42 +31,112 @@ So i can use httpx with an async context manager inside of a for loop with
 the page as the counter. Once it reaches 21, then exist.
 
 '''
-def construct_orm_model(anime_dto: AnimeDto) -> None:
-    topical_theme_objs = [topical_themes_orm_model.TopicalThemes(**t.model_dump()) for t in anime_dto.topical_themes] if anime_dto.topical_themes else []
-    trailer_obj = trailer_orm_model.Trailer(**anime_dto.trailer.model_dump()) if anime_dto.trailer else None
-    title_objs = [titles_orm_model.Titles(**t.model_dump()) for t in anime_dto.titles] if anime_dto.titles else []
-    genre_objs=[genres_orm_model.Genres(**g.model_dump()) for g in anime_dto.genres] if anime_dto.genres else []
-    studio_objs = [studios_orm_model.Studios(**s.model_dump()) for s in anime_dto.studios] if anime_dto.studios else []
-    image_obj = image_orm_model.Image(**anime_dto.images.jpg.model_dump()) if anime_dto.images.jpg else None
+# def construct_orm_model(anime_dto: AnimeDto) -> None:
+
+# # db query per theme
+#     # tt_list: List[TopicalThemesDto] = []
+#     # with next(get_db()) as db:
+#     #     for tt in anime_dto.topical_themes:
+#     #             existing = db.query(topical_themes_orm_model.TopicalThemes).filter(
+#     #             tt == topical_themes_orm_model.TopicalThemes.name
+#     #             ).first()
+#     #             if not existing:
+#     #                 tt_list.append(tt)
     
-    new_anime = anime_orm_model.Anime (
-        **anime_dto.model_dump(
-            exclude=["topical_themes",
-                    "trailer",
-                    "titles",
-                    "genres",
-                    "studios",
-                    "images",
-                    ]),
-        topical_themes= topical_theme_objs,
-        trailer=trailer_obj,
-        titles=title_objs,
-        genres=genre_objs,
-        studios=studio_objs,
-        image=image_obj
-    )
+#     # topical_themes_obj = [topical_themes_orm_model.TopicalThemes(**t.model_dump()) for t in tt_list] if anime_dto.topical_themes else []
 
-    commit_to_db(new_anime)
+# # bulk db query
+#     # set comprehension to extract unique themes and add them to a set
+#     tt_set: set[TopicalThemesDto] = {t.name for t in (anime_dto.topical_themes or [])}
+#     # Querying db to get all themes that match the previously constructed list. 
+#     # Bulk db query using in_ to avoid query per theme. Storing in set for constant time writes and lookups.
+#     # Details: we are iterating for "n," because sqlalchemy returns a tuple which is something like "Madhouse,". Since we only want "Madhouse", then we do n for n,
+#     with next(get_db()) as db:
+#         existing_set = {n for (n,) in db.query(
+#             topical_themes_orm_model.TopicalThemes.name)
+#             .filter(
+#                 topical_themes_orm_model.TopicalThemes.name.
+#                 in_(tt_set))}
+        
+#         # set difference to construct orm model instance from themes that are not in db. 
+#         # Details: This will create a new set that removes all the existing themes from the dto set, leaving us with all the new themes.
+#         new_tt_objs = [
+#             topical_themes_orm_model.TopicalThemes(name=n) for n in (tt_set - existing_set)
+#         ]
 
+#         db.add_all(new_tt_objs)
+
+
+
+def construct_orm_model(
+    dto_list: Iterable,
+    model: Type,
+    unique_attr: Column,
+    dto_value_getter: Callable
+):
+    """
+    Insert only unique values from DTO list into a table.
+
+    :param dto_list: The incoming DTO list
+    :param model: The ORM model class
+    :param unique_attr: The model column to check for uniqueness
+    :param dto_value_getter: Function to extract the field from a DTO item
+    """
+    dto_set = {dto_value_getter(item) for item in (dto_list or [])}
+
+    with next(get_db()) as db:
+        existing_set = {
+            n for (n,) in db.query(unique_attr)
+            .filter(unique_attr.in_(dto_set))
+        }
+
+        new_objs = [
+            model(**{unique_attr.key: n}) # unique_attr=n / table_field = n
+            for n in (dto_set - existing_set)
+        ]
+
+        if new_objs:
+            db.add_all(new_objs)
+            db.commit()
+
+        return new_objs
+
+
+
+
+        # trailer_obj = trailer_orm_model.Trailer(**anime_dto.trailer.model_dump()) if anime_dto.trailer else None
+        # title_objs = [titles_orm_model.Titles(**t.model_dump()) for t in anime_dto.titles] if anime_dto.titles else []
+        # genre_objs=[genres_orm_model.Genres(**g.model_dump()) for g in anime_dto.genres] if anime_dto.genres else []
+        # studio_objs = [studios_orm_model.Studios(**s.model_dump()) for s in anime_dto.studios] if anime_dto.studios else []
+        # image_obj = image_orm_model.Image(**anime_dto.images.jpg.model_dump()) if anime_dto.images.jpg else None
+        
+        # new_anime = anime_orm_model.Anime (
+        #     **anime_dto.model_dump(
+        #         exclude=["topical_themes",
+        #                 "trailer",
+        #                 "titles",
+        #                 "genres",
+        #                 "studios",
+        #                 "images",
+        #                 ]),
+        #     topical_themes= topical_themes_obj,
+        #     trailer=trailer_obj,
+        #     titles=title_objs,
+        #     genres=genre_objs,
+        #     studios=studio_objs,
+        #     image=image_obj
+        # )
+
+        # commit_to_db(new_anime)
 
 def commit_to_db(instance):
-            with next(get_db()) as db:
-                db.add(instance)
-                try:
-                    db.commit() # commit to db
-                except Exception:
-                    db.rollback() # if there is any issue, rollback to clean state
-                    raise # since we will be rolling back, we need to let the error handler that there was an issue, so we raise an error with the traceback
+    with next(get_db()) as db:
+        db.add(instance)
+        try:
+            db.commit() # commit to db
+        except Exception:
+            db.rollback() # if there is any issue, rollback to clean state
+            raise # since we will be rolling back, we need to let the error handler that there was an issue, so we raise an error with the traceback
 
 
 # def construct_orm_model(dto, orm_model, exclude = list[str]):
