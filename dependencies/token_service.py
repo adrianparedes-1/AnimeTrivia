@@ -1,4 +1,4 @@
-import os, redis
+import os
 from jose import ExpiredSignatureError, jwt
 from jose.exceptions import JWEInvalidAuth
 from fastapi import Response, status

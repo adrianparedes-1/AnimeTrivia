@@ -1,5 +1,6 @@
 import httpx, asyncio
 from db.session_manager import get_db
+from db.db_helpers import construct_orm_model_from_list, construct_parent_with_children
 from modules.anime.models import (
     anime_orm_model,
     endings_orm_model,
@@ -12,11 +13,14 @@ from modules.anime.models import (
     topical_themes_orm_model,
     trailer_orm_model
 )
-from modules.anime.dtos.anime_dto import Data, AnimeDto
+from modules.anime.dtos.trailer_dto import TrailerDto
+from modules.anime.dtos.titles_dto import TitlesDto
+from modules.anime.dtos.genres_dto import GenresDto
+from modules.anime.dtos.studios_dto import StudiosDto
+from modules.anime.dtos.images_dto import ImagesDto
 from modules.anime.dtos.topical_themes_dto import TopicalThemesDto
-from typing import Callable, Iterable, Type
-from sqlalchemy.orm import Session
-from sqlalchemy import Column
+
+from modules.anime.dtos.anime_dto import Data
 MAL_URL = "https://api.jikan.moe/v4/top/anime"
 PAGES = 22 
 sleep_timer = 2
@@ -28,120 +32,9 @@ since the json is paginated, i want to continue to send requests until page 21
 so that i can have 500~ animes. I want to make the request process async
 bc i want to wait until the info is retrieved and ready for me to write to db.
 So i can use httpx with an async context manager inside of a for loop with
-the page as the counter. Once it reaches 21, then exist.
+the page as the counter. Once it reaches 21, then exit.
 
 '''
-# def construct_orm_model(anime_dto: AnimeDto) -> None:
-
-# # db query per theme
-#     # tt_list: List[TopicalThemesDto] = []
-#     # with next(get_db()) as db:
-#     #     for tt in anime_dto.topical_themes:
-#     #             existing = db.query(topical_themes_orm_model.TopicalThemes).filter(
-#     #             tt == topical_themes_orm_model.TopicalThemes.name
-#     #             ).first()
-#     #             if not existing:
-#     #                 tt_list.append(tt)
-    
-#     # topical_themes_obj = [topical_themes_orm_model.TopicalThemes(**t.model_dump()) for t in tt_list] if anime_dto.topical_themes else []
-
-# # bulk db query
-#     # set comprehension to extract unique themes and add them to a set
-#     tt_set: set[TopicalThemesDto] = {t.name for t in (anime_dto.topical_themes or [])}
-#     # Querying db to get all themes that match the previously constructed list. 
-#     # Bulk db query using in_ to avoid query per theme. Storing in set for constant time writes and lookups.
-#     # Details: we are iterating for "n," because sqlalchemy returns a tuple which is something like "Madhouse,". Since we only want "Madhouse", then we do n for n,
-#     with next(get_db()) as db:
-#         existing_set = {n for (n,) in db.query(
-#             topical_themes_orm_model.TopicalThemes.name)
-#             .filter(
-#                 topical_themes_orm_model.TopicalThemes.name.
-#                 in_(tt_set))}
-        
-#         # set difference to construct orm model instance from themes that are not in db. 
-#         # Details: This will create a new set that removes all the existing themes from the dto set, leaving us with all the new themes.
-#         new_tt_objs = [
-#             topical_themes_orm_model.TopicalThemes(name=n) for n in (tt_set - existing_set)
-#         ]
-
-#         db.add_all(new_tt_objs)
-
-
-
-def construct_orm_model(
-    dto_list: Iterable,
-    model: Type,
-    unique_attr: Column,
-    dto_value_getter: Callable
-):
-    """
-    Insert only unique values from DTO list into a table.
-
-    :param dto_list: The incoming DTO list
-    :param model: The ORM model class
-    :param unique_attr: The model column to check for uniqueness
-    :param dto_value_getter: Function to extract the field from a DTO item
-    """
-    dto_set = {dto_value_getter(item) for item in (dto_list or [])}
-
-    with next(get_db()) as db:
-        existing_set = {
-            n for (n,) in db.query(unique_attr)
-            .filter(unique_attr.in_(dto_set))
-        }
-
-        new_objs = [
-            model(**{unique_attr.key: n}) # unique_attr=n / table_field = n
-            for n in (dto_set - existing_set)
-        ]
-
-        if new_objs:
-            db.add_all(new_objs)
-            db.commit()
-
-        return new_objs
-
-
-
-
-        # trailer_obj = trailer_orm_model.Trailer(**anime_dto.trailer.model_dump()) if anime_dto.trailer else None
-        # title_objs = [titles_orm_model.Titles(**t.model_dump()) for t in anime_dto.titles] if anime_dto.titles else []
-        # genre_objs=[genres_orm_model.Genres(**g.model_dump()) for g in anime_dto.genres] if anime_dto.genres else []
-        # studio_objs = [studios_orm_model.Studios(**s.model_dump()) for s in anime_dto.studios] if anime_dto.studios else []
-        # image_obj = image_orm_model.Image(**anime_dto.images.jpg.model_dump()) if anime_dto.images.jpg else None
-        
-        # new_anime = anime_orm_model.Anime (
-        #     **anime_dto.model_dump(
-        #         exclude=["topical_themes",
-        #                 "trailer",
-        #                 "titles",
-        #                 "genres",
-        #                 "studios",
-        #                 "images",
-        #                 ]),
-        #     topical_themes= topical_themes_obj,
-        #     trailer=trailer_obj,
-        #     titles=title_objs,
-        #     genres=genre_objs,
-        #     studios=studio_objs,
-        #     image=image_obj
-        # )
-
-        # commit_to_db(new_anime)
-
-def commit_to_db(instance):
-    with next(get_db()) as db:
-        db.add(instance)
-        try:
-            db.commit() # commit to db
-        except Exception:
-            db.rollback() # if there is any issue, rollback to clean state
-            raise # since we will be rolling back, we need to let the error handler that there was an issue, so we raise an error with the traceback
-
-
-# def construct_orm_model(dto, orm_model, exclude = list[str]):
-#     return orm_model (
-#         **dto.model_dump(exclude=exclude))
 
 async def populate_anime_table():
     async with httpx.AsyncClient() as async_client:
@@ -155,7 +48,60 @@ async def populate_anime_table():
                             anime.mal_id == anime_orm_model.Anime.mal_id
                         ).first()
                         if not existing:
-                            construct_orm_model(anime)
+                            key_map = {
+                                "topical_themes": construct_orm_model_from_list(
+                                    anime.topical_themes,
+                                    topical_themes_orm_model.TopicalThemes,
+                                    topical_themes_orm_model.TopicalThemes.name,
+                                    lambda tt: tt.name
+                                ),
+                                "titles": construct_orm_model_from_list(
+                                    anime.titles,
+                                    titles_orm_model.Titles,
+                                    titles_orm_model.Titles.name,
+                                    lambda t: t.name
+                                ),
+                                "studios": construct_orm_model_from_list(
+                                    anime.studios,
+                                    studios_orm_model.Studios,
+                                    studios_orm_model.Studios.name,
+                                    lambda s: s.name    
+                                ),
+                                "genres": construct_orm_model_from_list(
+                                    anime.genres,
+                                    genres_orm_model.Genres,
+                                    genres_orm_model.Genres.genre,
+                                    lambda g: g.genre
+                                )
+                            }
+                            # scalar_fields = anime.model_dump(
+                            #     exclude=set(key_map.keys()) | {"trailer", "image"}
+                            # )
+                            # scalar_fields["trailer"] = trailer_orm_model.Trailer(**anime.trailer.model_dump()) if anime.trailer else None
+                            # scalar_fields["image"] = image_orm_model.Image(**anime.image.jpg.model_dump()) if anime.image.jpg else None
+                            scalar_fields = {
+                                "mal_id":        anime.mal_id,
+                                "name":          anime.name,
+                                "rank":          anime.rank,
+                                "score":         anime.score,
+                                "scored_by":     anime.scored_by,
+                                "popularity":    anime.popularity,
+                                "times_favorited": anime.times_favorited,
+                                "members_MAL":   anime.members_MAL,
+                                "synopsis":      anime.synopsis,
+                                "release_year":  anime.release_year,
+                                "release_season":anime.release_season,
+                                # one-to-one relationships are ORM objects, not dicts
+                                "trailer":      trailer_orm_model.Trailer(**anime.trailer.model_dump()) if anime.trailer else None,
+                                "image":        image_orm_model.Image(**anime.image.jpg.model_dump()) if anime.image and anime.image.jpg else None,
+                            }
+
+                            construct_parent_with_children(
+                                anime_orm_model.Anime,
+                                scalar_fields,
+                                key_map
+                            )
+                            
                         else:
                             continue
             except Exception:

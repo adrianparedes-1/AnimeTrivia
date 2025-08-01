@@ -22,7 +22,7 @@ class Anime(Base):
     
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     mal_id: Mapped[int] = mapped_column(Integer, server_default=None)
-    title: Mapped[str] = mapped_column(String(300))
+    name: Mapped[str] = mapped_column(String(300))
     rank: Mapped[Optional[int]] = mapped_column(Integer)
     score: Mapped[float] = mapped_column(Float)
     scored_by: Mapped[int] = mapped_column(Integer)
