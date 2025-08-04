@@ -7,15 +7,18 @@ from modules.anime.models.junction_tables.anime_studios import anime_studios_tab
 from modules.anime.models.junction_tables.anime_titles import anime_titles_table
 from modules.anime.models.junction_tables.anime_genres import anime_genres_table
 from modules.anime.models.junction_tables.anime_topical_themes import anime_topical_themes_table
+from modules.anime.models.junction_tables.anime_endings import anime_endings_table
+from modules.anime.models.junction_tables.anime_openings import anime_openings_table
 from typing import List, TYPE_CHECKING
 if TYPE_CHECKING:
-    from modules.anime.models.theme_orm_model import Themes
     from modules.anime.models.topical_themes_orm_model import TopicalThemes
     from modules.anime.models.titles_orm_model import Titles
     from modules.anime.models.genres_orm_model import Genres
     from modules.anime.models.studios_orm_model import Studios
     from modules.anime.models.image_orm_model import Image
     from modules.anime.models.trailer_orm_model import Trailer
+    from modules.anime.models.openings_orm_model import Openings
+    from modules.anime.models.endings_orm_model import Endings
 
 class Anime(Base):
     __tablename__ = "anime"
@@ -64,6 +67,20 @@ class Anime(Base):
         cascade="all, delete-orphan",
         passive_deletes=True        
         )
-    themes: Mapped[List["Themes"]] = relationship(back_populates="anime")
+    openings: Mapped[List["Openings"]] = relationship(
+        secondary=anime_openings_table,
+        back_populates="animes",
+        single_parent=True,
+        cascade="all, delete-orphan",
+        passive_deletes=True        
+        )
+    endings: Mapped[List["Endings"]] = relationship(
+        secondary=anime_endings_table,
+        back_populates="animes",
+        single_parent=True,
+        cascade="all, delete-orphan",
+        passive_deletes=True        
+        )
+
     trailer: Mapped["Trailer"] = relationship(back_populates="anime")
     image: Mapped["Image"] = relationship(back_populates="anime")

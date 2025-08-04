@@ -3,22 +3,13 @@ from db.session_manager import get_db
 from db.db_helpers import construct_orm_model_from_list, construct_parent_with_children
 from modules.anime.models import (
     anime_orm_model,
-    endings_orm_model,
     genres_orm_model,
     image_orm_model,
-    openings_orm_model,
     studios_orm_model,
-    theme_orm_model,
     titles_orm_model,
     topical_themes_orm_model,
     trailer_orm_model
 )
-from modules.anime.dtos.trailer_dto import TrailerDto
-from modules.anime.dtos.titles_dto import TitlesDto
-from modules.anime.dtos.genres_dto import GenresDto
-from modules.anime.dtos.studios_dto import StudiosDto
-from modules.anime.dtos.images_dto import ImagesDto
-from modules.anime.dtos.topical_themes_dto import TopicalThemesDto
 
 from modules.anime.dtos.anime_dto import Data
 MAL_URL = "https://api.jikan.moe/v4/top/anime"

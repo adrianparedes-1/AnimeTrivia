@@ -1,7 +1,8 @@
 from datetime import datetime
 from db.base_orm_model import Base
-from typing import Optional
-from sqlalchemy import Integer, func, String, ForeignKey
+from typing import List
+from sqlalchemy import Integer, func, String
+from modules.anime.models.junction_tables.anime_openings import anime_openings_table
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 class Openings(Base):
@@ -14,5 +15,8 @@ class Openings(Base):
     updated_at: Mapped[datetime] = mapped_column(server_default=func.now(), onupdate=func.current_timestamp())
 
 
-    theme_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey('themes.id'), server_default=None)
-    theme: Mapped["Themes"] = relationship("Themes", back_populates="openings") 
+    animes: Mapped[List["Anime"]] = relationship(
+        "Anime",
+        secondary=anime_openings_table,
+        back_populates="openings"
+    )
