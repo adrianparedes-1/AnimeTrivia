@@ -20,26 +20,28 @@ def construct_orm_model_from_list(
     """
     dto_set = {dto_value_getter(item) for item in (dto_list or [])}
 
+    if not dto_set:
+        return []
+    
     with next(get_db()) as db:
-        existing_set = {
-            n for (n,) in db.query(unique_attr)
-            .filter(unique_attr.in_(dto_set))
-        }
-
+        existing_objs = (
+            db.query(model)
+                   .filter(unique_attr.in_(dto_set))
+                   .all()
+        )
+        existing_set = {getattr(o, unique_attr.key) for o in existing_objs}
         new_objs = [
             model(**{unique_attr.key: n}) # unique_attr=n / table_field = n
             for n in (dto_set - existing_set) 
         ]
-
         if new_objs:
-            db.add_all(new_objs)
             try:
+                db.add_all(new_objs)
                 db.commit()
-            except Exception:
+            except:
                 db.rollback()
                 raise 
-
-        return new_objs
+        return new_objs + existing_objs
 
 
 def construct_parent_with_children(

@@ -38,19 +38,31 @@ class Anime(Base):
 
     topical_themes: Mapped[List["TopicalThemes"]] = relationship(
         secondary=anime_topical_themes_table,
-        back_populates="animes"
+        back_populates="animes",
+        single_parent=True,
+        cascade="all, delete-orphan",
+        passive_deletes=True
         )
     titles: Mapped[List["Titles"]] = relationship(
         secondary=anime_titles_table,
-        back_populates="animes"
+        back_populates="animes",
+        single_parent=True,
+        cascade="all, delete-orphan",
+        passive_deletes=True        
         )
     genres: Mapped[List["Genres"]] = relationship(
         secondary=anime_genres_table,
-        back_populates="animes"
+        back_populates="animes",
+        single_parent=True,
+        cascade="all, delete-orphan",
+        passive_deletes=True        
         )
     studios: Mapped[List["Studios"]] = relationship(
         secondary=anime_studios_table,
-        back_populates="animes"
+        back_populates="animes",
+        single_parent=True,
+        cascade="all, delete-orphan",
+        passive_deletes=True        
         )
     themes: Mapped[List["Themes"]] = relationship(back_populates="anime")
     trailer: Mapped["Trailer"] = relationship(back_populates="anime")
