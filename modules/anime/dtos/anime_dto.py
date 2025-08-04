@@ -9,7 +9,7 @@ from modules.anime.dtos.images_dto import ImagesDto
 from modules.anime.dtos.topical_themes_dto import TopicalThemesDto
 
 class AnimeDto(Base):
-    name: str = Field("title")
+    name: str = Field(alias="title")
     mal_id: int
     rank: Optional[int]
     score: float

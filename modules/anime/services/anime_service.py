@@ -91,7 +91,6 @@ async def populate_anime_table():
                                 "synopsis":      anime.synopsis,
                                 "release_year":  anime.release_year,
                                 "release_season":anime.release_season,
-                                # one-to-one relationships are ORM objects, not dicts
                                 "trailer":      trailer_orm_model.Trailer(**anime.trailer.model_dump()) if anime.trailer else None,
                                 "image":        image_orm_model.Image(**anime.image.jpg.model_dump()) if anime.image and anime.image.jpg else None,
                             }
@@ -101,7 +100,6 @@ async def populate_anime_table():
                                 scalar_fields,
                                 key_map
                             )
-                            
                         else:
                             continue
             except Exception:
