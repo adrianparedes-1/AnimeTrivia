@@ -6,6 +6,7 @@ from dependencies.admin import admin
 from modules.anime.routers import (
     anime_router
 )
+from modules.game.routers import game_router
 from modules.user.routers import auth_router
 from modules.menu.routers import (
     menu_router,
@@ -28,6 +29,7 @@ app.include_router(auth_router.router)
 app.include_router(menu_router.router)
 app.include_router(profile_router.router)
 app.include_router(anime_router.router)
+app.include_router(game_router.router)
 
 @app.middleware("http")
 async def auth_user(request: Request, call_next):

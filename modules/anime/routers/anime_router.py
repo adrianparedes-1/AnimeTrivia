@@ -4,7 +4,6 @@ from modules.anime.services.themes_service import themes_service
 import logging
 '''
 call a service that gets the info from MAL api and writes it to db
-
 '''
 router = APIRouter(
     prefix="/anime", 
@@ -17,9 +16,7 @@ async def add_animes():
     try:
         await populate_anime_table()
     except Exception as exc:
-        # Log the full traceback in your console/log file
         logger.exception("populate_anime_table failed")
-        # Return a JSON error with the exception message
         raise HTTPException(
             status_code=500,
             detail=f"Populating anime table failed: {exc}"
@@ -29,8 +26,6 @@ async def add_animes():
         content="Animes added to DB successfully.",
         media_type="text/plain",
     )
-
-
 
 
 @router.post("/themes")

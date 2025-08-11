@@ -37,4 +37,6 @@ async def profile(request: Request):
 
 @router.get("/play")
 def read_profile(request: Request):
-    return {"user": request.state.user}
+    return RedirectResponse(
+        url=URL("/game")
+    )
