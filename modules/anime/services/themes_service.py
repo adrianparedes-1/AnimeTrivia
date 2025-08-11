@@ -11,9 +11,6 @@ async def themes_service():
             existing_animes = {n for n, in
                 db.query(Anime.mal_id).all()
             }
-            # print(type(existing_animes))
-            # print(len(existing_animes))
-
             anime_dict = {}
             for anime in existing_animes:
                 response = await async_client.get(f"https://api.jikan.moe/v4/anime/{anime}/themes")
@@ -22,9 +19,7 @@ async def themes_service():
                     anime_dict[f"{anime}:openings"] = validated_themes_obj.data.openings
                     anime_dict[f"{anime}:endings"] = validated_themes_obj.data.endings
                 await asyncio.sleep(0.2)
-            '''
-            for every anime, i want to create an instance with the key being the anime and values being the openings and endings
-            '''
+                
             anime_objs = db.query(Anime).filter(Anime.mal_id.in_(existing_animes)).all()
             anime_map = {anime.mal_id: anime for anime in anime_objs}
 

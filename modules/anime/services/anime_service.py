@@ -18,13 +18,12 @@ sleep_timer = 2
 
 
 '''
-i want to  send a get request to the mal api and get a json
+I want to  send a get request to the mal api and get a json
 since the json is paginated, i want to continue to send requests until page 21
 so that i can have 500~ animes. I want to make the request process async
 bc i want to wait until the info is retrieved and ready for me to write to db.
 So i can use httpx with an async context manager inside of a for loop with
 the page as the counter. Once it reaches 21, then exit.
-
 '''
 
 async def populate_anime_table():
