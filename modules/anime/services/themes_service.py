@@ -18,7 +18,7 @@ async def themes_service():
                 if validated_themes_obj and validated_themes_obj.data:
                     anime_dict[f"{anime}:openings"] = validated_themes_obj.data.openings
                     anime_dict[f"{anime}:endings"] = validated_themes_obj.data.endings
-                await asyncio.sleep(0.2)
+                await asyncio.sleep(1) # to avoid rate limit
                 
             anime_objs = db.query(Anime).filter(Anime.mal_id.in_(existing_animes)).all()
             anime_map = {anime.mal_id: anime for anime in anime_objs}
