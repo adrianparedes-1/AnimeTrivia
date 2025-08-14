@@ -1,7 +1,10 @@
 from db.session_manager import get_db
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import joinedload, load_only
 from modules.game.dtos.game_room_dto import GameRoom
+from modules.game.dtos.clean_retrieval import CleanList
 from modules.anime.models.anime_orm_model import Anime
+from dependencies.redis_client import get_client
+import json
 
 '''
 create a game room obj using the Game Room DTO.
@@ -12,7 +15,6 @@ We will query db to create the obj.
 
 def create_game_room() -> GameRoom:
     ...
-
 
 
 def fetch_animes():
@@ -27,26 +29,20 @@ def fetch_animes():
             .limit(10)
             .all()
         )
-        # convert to dicts for testing
-        data = []
+        clean = []
         for anime in animes:
-            data.append({
-                "anime": {
-                    c.name: getattr(anime, c.name)
-                    for c in anime.__table__.columns
-                },
-                "openings": [
-                    {c.name: getattr(op, c.name) for c in op.__table__.columns}
-                    for op in anime.openings
-                ],
-                "endings": [
-                    {c.name: getattr(ed, c.name) for c in ed.__table__.columns}
-                    for ed in anime.endings
-                ],
-                "titles": [
-                    {c.name: getattr(title, c.name) for c in title.__table__.columns}
-                    for title in anime.titles
-                ]
-            })
+            clean.append(CleanList.model_validate(anime))
 
-        return data
+        return [c.model_dump() for c in clean]
+
+
+        # r = get_client()
+        # for anime in data:´
+        #     redis_mapping = {
+        #         "anime": json.dumps(anime["anime"]),
+        #         "openings": json.dumps(anime["openings"]),
+        #         "endings": json.dumps(anime["endings"]),
+        #         "titles": json.dumps(anime["titles"]),
+        #     }
+        #     r.hset("test", mapping=redis_mapping)
+        # return animes
