@@ -4,20 +4,20 @@ from modules.game.dtos.game_room_dto import GameRoom
 from modules.game.dtos.clean_retrieval import CleanList
 from modules.anime.models.anime_orm_model import Anime
 from dependencies.redis_client import get_client
+from typing import Mapping
 import json
-
 '''
 create a game room obj using the Game Room DTO.
 We will query db to create the obj.
 1. query db to get anime with titles, openings, and endings
-
+2. create hash in redis with game room info (game room session)
 '''
 
 def create_game_room() -> GameRoom:
     ...
 
 
-def fetch_animes():
+def fetch_animes() -> Mapping:
     with next(get_db()) as db:
         animes = (
             db.query(Anime)
@@ -33,16 +33,11 @@ def fetch_animes():
         for anime in animes:
             clean.append(CleanList.model_validate(anime))
 
-        return [c.model_dump() for c in clean]
+        final_obj = [c.model_dump() for c in clean]
+
+        return final_obj
 
 
-        # r = get_client()
-        # for anime in data:´
-        #     redis_mapping = {
-        #         "anime": json.dumps(anime["anime"]),
-        #         "openings": json.dumps(anime["openings"]),
-        #         "endings": json.dumps(anime["endings"]),
-        #         "titles": json.dumps(anime["titles"]),
-        #     }
-        #     r.hset("test", mapping=redis_mapping)
-        # return animes
+def redis_test(animes: Mapping):
+    r = get_client()
+    r.json().set("current_list", "$", animes)
