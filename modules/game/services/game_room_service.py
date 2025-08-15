@@ -4,8 +4,8 @@ from modules.game.dtos.game_room_dto import GameRoom
 from modules.game.dtos.clean_retrieval import CleanList
 from modules.anime.models.anime_orm_model import Anime
 from dependencies.redis_client import get_client
-from typing import Mapping
-import json
+from typing import Mapping, List
+import json, uuid
 '''
 create a game room obj using the Game Room DTO.
 We will query db to create the obj.
@@ -13,8 +13,19 @@ We will query db to create the obj.
 2. create hash in redis with game room info (game room session)
 '''
 
-def create_game_room() -> GameRoom:
-    ...
+def create_game_room(players: List):
+    '''
+    Creates game room in redis
+    '''
+    animes = fetch_animes()
+    room_id = uuid.uuid4()
+    game_room = {
+        "players": players,
+        "anime_list": animes
+    }
+    r = get_client()
+    r.json().set(f"game_room:{room_id}", "$", game_room)
+    r.expire(f"game_room:{room_id}", 15)
 
 
 def fetch_animes() -> Mapping:

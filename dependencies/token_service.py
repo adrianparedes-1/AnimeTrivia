@@ -23,7 +23,7 @@ def create_tokens(data: dict):
     )
 
     data_encode.update({
-        "exp": int((current_time + timedelta(days=1)).replace(tzinfo=timezone.utc).timestamp()), # expiration time for app refresh token
+        "exp": int((current_time + timedelta(days=30)).replace(tzinfo=timezone.utc).timestamp()), # expiration time for app refresh token ------- for development
         "iat": int(current_time.replace(tzinfo=timezone.utc).timestamp()), # issued at time (current time)
     })
     
