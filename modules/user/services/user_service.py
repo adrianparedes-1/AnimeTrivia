@@ -58,7 +58,7 @@ def save_in_redis(user_id,
             spotify_refresh_token
             ):
     r = get_client()
-    r.setex(f"{user_id}:app_access_token", 3600, app_access_token)
+    r.setex(f"{user_id}:app_access_token", 86400, app_access_token) # for development 
     r.setex(f"{user_id}:app_refresh_token", 86400, app_refresh_token)
     r.setex(f"{user_id}:spotify_access_token", 3600, spotify_access_token)
     r.setex(f"{user_id}:spotify_refresh_token", 86400, spotify_refresh_token)
