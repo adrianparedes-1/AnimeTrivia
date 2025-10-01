@@ -1,11 +1,11 @@
 from db.session_manager import get_db
 from sqlalchemy.orm import joinedload
+from sqlalchemy import func
 from modules.game.dtos.clean_retrieval import CleanList
 from modules.anime.models.anime_orm_model import Anime
 from dependencies.redis_client import get_client
-from typing import Mapping, List
-import uuid
-from redis import Redis
+from typing import List
+import uuid, random
 '''
 create a game room obj using the Game Room DTO.
 We will query db to create the obj.
@@ -22,7 +22,6 @@ def get_recent_animes():
         return r.json().get("recent_animes")
     except:
         return []
-
 
 def add_to_recent_animes(animes):
     '''
@@ -60,6 +59,7 @@ def fetch_animes() -> List:
             animes = (
                 db.query(Anime)
                 .filter(Anime.name.not_in(animes_list))
+                .order_by(func.random())
                 .options(
                     joinedload(Anime.openings),
                     joinedload(Anime.endings),
@@ -71,6 +71,7 @@ def fetch_animes() -> List:
         else:
             animes = (
                 db.query(Anime)
+                .order_by(func.random())
                 .options(
                     joinedload(Anime.openings),
                     joinedload(Anime.endings),
@@ -86,7 +87,3 @@ def fetch_animes() -> List:
         final_obj = [c.model_dump() for c in clean]
 
         return final_obj
-
-def redis_test(animes: Mapping):
-    r = get_client()
-    r.json().set("current_list", "$", animes)
