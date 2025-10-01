@@ -13,7 +13,7 @@ def create_tokens(data: dict):
     data_encode = data.copy()
     current_time = datetime.now(timezone.utc)    
     data_encode.update({
-        "exp": int((current_time + timedelta(hours=1)).replace(tzinfo=timezone.utc).timestamp()), # expiration time for app access token
+        "exp": int((current_time + timedelta(hours=24)).replace(tzinfo=timezone.utc).timestamp()), # expiration time for app access token, 24 hrs for development
         "iat": int(current_time.replace(tzinfo=timezone.utc).timestamp()), # issued at time (current time)
     })
     access_token = jwt.encode(
