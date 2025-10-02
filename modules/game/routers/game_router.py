@@ -13,7 +13,7 @@ router = APIRouter(
 )
 
 
-@router.get("")
+@router.post("")
 def start_game(request: Request):
     necessary_player_info = {
         "id": request.state.user["id"],
