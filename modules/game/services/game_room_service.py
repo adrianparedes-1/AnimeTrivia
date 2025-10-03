@@ -1,7 +1,7 @@
 from db.session_manager import get_db
 from sqlalchemy.orm import joinedload
 from sqlalchemy import func
-from modules.game.dtos.clean_retrieval import CleanList
+from modules.game.dtos.clean_retrieval import AnimeRedis
 from modules.anime.models.anime_orm_model import Anime
 from dependencies.redis_client import get_client
 from typing import List
@@ -23,22 +23,21 @@ def get_recent_animes(player_id: int):
     except:
         return []
 
-def add_to_recent_animes(animes, players: List):
+def add_to_recent_animes(animes, players: List[dict]):
     '''
     Add animes to recent animes list in cache.
     '''
     for player in players:
         cached_animes = get_recent_animes(player["id"])
-        print(cached_animes)
         if not cached_animes:
-            r.json().set(f"recent_animes: {player["id"]}", "$", cached_animes)
-            r.expire(f"recent_animes: {player["id"]}", 86400)
+            r.json().set(f"{player["id"]}: recent_animes", "$", cached_animes)
+            r.expire(f"{player["id"]}: recent_animes", 86400)
         else:
             cached_animes.extend(anime for anime in animes)
-            r.json().set(f"recent_animes: {player["id"]}", "$", cached_animes)
-            r.expire(f"recent_animes: {player["id"]}", 86400)
+            r.json().set(f"{player["id"]}: recent_animes", "$", cached_animes)
+            r.expire(f"{player["id"]}: recent_animes", 86400)
 
-def create_game_room(players: List):
+def create_game_room(players: List[dict]):
     '''
     Creates game room in redis
     ''' 
@@ -53,7 +52,7 @@ def create_game_room(players: List):
     r.expire(f"game_room:{room_id}", 3600)
     add_to_recent_animes(animes, players)
 
-def fetch_animes(players: List) -> List:
+def fetch_animes(players: List[dict]) -> List[dict]:
     for player in players:
         cached_animes = get_recent_animes(player["id"])
         with next(get_db()) as db:
@@ -85,7 +84,8 @@ def fetch_animes(players: List) -> List:
                 )
             clean = []
             for anime in animes:
-                clean.append(CleanList.model_validate(anime))
+                if anime.openings or anime.endings:
+                    clean.append(AnimeRedis.model_validate(anime))
 
             final_obj = [c.model_dump() for c in clean]
 

@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Request, HTTPException, Response, status
 from modules.game.dtos.game_room_dto import GameRoom
 from modules.game.services.game_room_service import create_game_room
+from modules.game.services.game_logic_service import selection
 import logging
 
 logger = logging.getLogger(__name__)
@@ -21,7 +22,7 @@ def start_game(request: Request):
         "display_name": request.state.user["display_name"]
     }
     try:
-        create_game_room([necessary_player_info]) 
+        create_game_room([necessary_player_info])
     except Exception as e:
         logger.exception("starting game room failed")
         raise HTTPException(
@@ -31,3 +32,8 @@ def start_game(request: Request):
     return Response(
         status_code=status.HTTP_200_OK
     )
+
+
+@router.post("/guess")
+def guessing():
+    selection()
