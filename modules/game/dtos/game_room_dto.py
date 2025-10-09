@@ -12,3 +12,7 @@ class GameRoom(Base):
     players: List[Player]
     anime_list: Optional[List[AnimeRedis]] = None
     scoreboard: Optional[Mapping[str, int]] = None
+
+
+class Guess(Base):
+    name: Optional[str] = None

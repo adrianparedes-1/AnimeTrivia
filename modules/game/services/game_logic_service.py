@@ -2,10 +2,10 @@ from db.session_manager import get_db
 from sqlalchemy.orm import joinedload
 from sqlalchemy import func
 from modules.game.dtos.clean_retrieval import AnimeRedis
-from modules.game.dtos.game_room_dto import GameRoom
+from modules.game.dtos.game_room_dto import GameRoom, Guess
 from dependencies.redis_client import get_client
 from typing import List
-import uuid, random
+import random
 '''
 Game logic.
 '''
@@ -32,40 +32,28 @@ def selection():
         for room in game_room_contents:
             validated_game_room_contents.append(GameRoom.model_validate(room[0]))
 
-    '''
-    alright so current situation is that we can successfully fetch the elements of each game room. Now we need to just extract the animes to pick from. I wonder if there is a way for us to only get the player's id rather than all the information inside the game room obj??
-    I dont think we can do it with mget and mget seems to be the most convenient method to retrieve the contents of the game rooms so im just going to run with this implementation but i believe it could be optimized if i spent more time on it.
-
-
-    ok so i validate the game room objects so i could get type checking and dot notation access. Now i just need to get the attributes.
-    '''
-    anime_titles = []
     for room in validated_game_room_contents:
-        for attributes in room.anime_list:
-            # print(attributes.openings)
-            # print(attributes.endings)
-            # print(attributes.titles)
-            anime_titles.extend(attributes.titles)
-
-    return anime_titles
-    '''
-    ok now we have the attributes. technically now i would pass the name of the song to my client so it could play the song in a react frontend but i dont have that yet so we are going to pretend i did that and the user is going to guess now.
-    '''
+        random_selection = random.randint(0,9)
+        random_anime = room.anime_list[random_selection]
+    print(random_anime)
+    r.json().delete(random_anime.anime, f"{resulting_tuple}")
+    return random_anime.titles
 
 
-def guessing():
+def guessing(guess: Guess):
     '''
-    1. player sends guess
-    '''
-    ...
+    1. player sends guess.
 
-
-def guess_check():
+    Player will guess by sending a string with the anime name in the body of a POST request
     '''
-    check the player's guess vs. the selected anime
-    '''
-    ...
-
+    if guess:
+        anime_titles = selection()
+        for title in anime_titles:
+            if title.name == guess.name:
+                return 'CORRECT!' #should be returning the player's updated score
+        return 'WRONG!'
+    else:
+        return "Player did not submit a guess"
 
 def scoreboard():
     '''
