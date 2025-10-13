@@ -1,15 +1,18 @@
 from db.session_manager import get_db
 from sqlalchemy.orm import joinedload
-from sqlalchemy import func
+from sqlalchemy import func, exists
 from modules.game.dtos.clean_retrieval import AnimeRedis
 from modules.anime.models.anime_orm_model import Anime
+from modules.anime.models.openings_orm_model import Openings
+from modules.anime.models.endings_orm_model import Endings
+from modules.game.dtos.game_room_dto import GameRoom, Scoreboard
 from dependencies.redis_client import get_client
 from typing import List
 import uuid, random
 '''
 create a game room obj using the Game Room DTO.
 We will query db to create the obj.
-1. query db to get anime with titles, openings, and endings
+1. query db to get anime with titles, openings, and Endingss
 2. create hash in redis with game room info (game room session)
 '''
 r = get_client()
@@ -43,16 +46,22 @@ def create_game_room(players: List[dict]):
     ''' 
     animes = fetch_animes(players)
     room_id = uuid.uuid4()
-    game_room = {
-        "players": players,
-        "anime_list": animes
-    }
-
-    r.json().set(f"game_room:{room_id}", "$", game_room)
+    game_room = GameRoom (
+        players=players,
+        anime_list=animes,
+        scoreboard=Scoreboard(
+            players=players,
+            score=0,
+            rounds=10
+        )
+    )
+    r.json().set(f"game_room:{room_id}", "$", game_room.model_dump())
     r.expire(f"game_room:{room_id}", 3600)
     add_to_recent_animes(animes, players)
+    return room_id
 
 def fetch_animes(players: List[dict]) -> List[dict]:
+    count: int = 10
     for player in players:
         cached_animes = get_recent_animes(player["id"])
         with next(get_db()) as db:
@@ -61,32 +70,36 @@ def fetch_animes(players: List[dict]) -> List[dict]:
                 animes = (
                     db.query(Anime)
                     .filter(Anime.name.not_in(animes_list))
+                    .filter(
+                        (Anime.openings.any()) | 
+                        (Anime.endings.any())
+                    )
                     .order_by(func.random())
                     .options(
                         joinedload(Anime.openings),
-                        joinedload(Anime.endings),
+                        joinedload(Anime.endings),  
                         joinedload(Anime.titles),
                     )
-                    .limit(10)
+                    .limit(count)
                     .all()
                 )
             else:
                 animes = (
                     db.query(Anime)
+                    .filter(
+                        (Anime.openings.any()) | 
+                        (Anime.endings.any())
+                    )
                     .order_by(func.random())
                     .options(
                         joinedload(Anime.openings),
                         joinedload(Anime.endings),
                         joinedload(Anime.titles),
                     )
-                    .limit(10)
+                    .limit(count)
                     .all()
                 )
-            clean = []
-            for anime in animes:
-                if anime.openings or anime.endings:
-                    clean.append(AnimeRedis.model_validate(anime))
-
+            
+            clean = [AnimeRedis.model_validate(anime) for anime in animes]
             final_obj = [c.model_dump() for c in clean]
-
             return final_obj

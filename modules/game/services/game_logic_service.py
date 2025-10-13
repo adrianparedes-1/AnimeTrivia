@@ -11,24 +11,6 @@ Game logic.
 '''
 r = get_client()
 
-# def selection(room_id: str):
-#     # Get the anime list length first
-#     anime_count = r.json().arrlen(f"game_room:{room_id}", "$.anime_list")[0]
-    
-#     if anime_count == 0:
-#         return None  # Game over
-    
-#     # Select random index
-#     random_selection = random.randint(0, anime_count - 1)
-    
-#     # Get the selected anime
-#     selected_anime = r.json().get(f"game_room:{room_id}", f"$.anime_list[{random_selection}]")[0]
-    
-#     # Remove it from the list
-#     r.json().delete(f"game_room:{room_id}", f"$.anime_list[{random_selection}]")
-    
-#     return selected_anime
-
 def selection(player_id: int):
     '''
     1. select a random anime from the available animes in the game_room object.
@@ -43,18 +25,24 @@ def selection(player_id: int):
         # print(player_ids)
         flattened = sum(player_ids, [])
         # print(flattened)
-        game_room_key = resulting_tuple[1][0]
+        game_room_key = resulting_tuple[1][0] # can safely select the first index since player should only be in 1 game room at a time
         if player_id in flattened:
             anime_count = r.json().arrlen(game_room_key, "$.anime_list")
-            # print(f"found it: {anime_count}")
+            if anime_count[0] == 0:
+                r.json().delete(game_room_key, "$")
+                return 'game over'
+            print(f"found it: {anime_count}")
             print(game_room_key)
-            random_selection = random.randint(0,anime_count[0]) # the limit should be the size of the anime list
-            if random_selection:
-                selected_anime: AnimeRedis = r.json().get(game_room_key, f"$.anime_list[{random_selection}]")
-                # print(selected_anime[0]["titles"]) #come back to this
+            random_selection = random.randint(0, anime_count[0] - 1)
+            
+            print(random_selection)
+            selected_anime = r.json().get(game_room_key, f"$.anime_list[{random_selection}]")
+            print(selected_anime[0]["titles"]) 
 
     r.json().delete(game_room_key, f"$.anime_list[{random_selection}]")
     return selected_anime[0]["titles"]
+
+
 
 
 def guessing(guess: Guess):
@@ -76,4 +64,8 @@ def scoreboard():
     1. update the player's score
     2. return the player's current score
     '''
+    ...
+
+
+def clean_up_game_room():
     ...

@@ -60,4 +60,5 @@ def logic(request: Request):
         "username": request.state.user["username"],
         "display_name": request.state.user["display_name"]
     }
-    selection(necessary_player_info["id"])
+    return selection(necessary_player_info["id"])
+    
