@@ -6,12 +6,16 @@ from modules.game.dtos.clean_retrieval import AnimeRedis
 from pydantic import RootModel
 
 
+
+class Scoreboard(Base):
+    score: int
+    rounds: int
+
 class GameRoom(Base):
-    # state: Optional[str] = None
     timer: Optional[float] = None
-    players: List[Player]
+    players: Players
     anime_list: Optional[List[AnimeRedis]] = None
-    scoreboard: Optional[Mapping[str, int]] = None
+    scoreboard: Optional[Mapping[Player, Scoreboard]] = None
 
 
 class Guess(Base):
