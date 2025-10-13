@@ -5,9 +5,8 @@ from typing import List, Mapping, Optional
 from modules.game.dtos.clean_retrieval import AnimeRedis
 from pydantic import RootModel
 
-
-
 class Scoreboard(Base):
+    players: Optional[Players]
     score: int
     rounds: int
 
@@ -15,7 +14,7 @@ class GameRoom(Base):
     timer: Optional[float] = None
     players: Players
     anime_list: Optional[List[AnimeRedis]] = None
-    scoreboard: Optional[Mapping[Player, Scoreboard]] = None
+    scoreboard: Optional[Scoreboard] = None
 
 
 class Guess(Base):

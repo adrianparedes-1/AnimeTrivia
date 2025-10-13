@@ -5,7 +5,7 @@ from modules.game.dtos.clean_retrieval import AnimeRedis
 from modules.anime.models.anime_orm_model import Anime
 from modules.anime.models.openings_orm_model import Openings
 from modules.anime.models.endings_orm_model import Endings
-from modules.game.dtos.game_room_dto import GameRoom
+from modules.game.dtos.game_room_dto import GameRoom, Scoreboard
 from dependencies.redis_client import get_client
 from typing import List
 import uuid, random
@@ -46,11 +46,16 @@ def create_game_room(players: List[dict]):
     ''' 
     animes = fetch_animes(players)
     room_id = uuid.uuid4()
-    game_room = {
-        "players": players,
-        "anime_list": animes
-    }
-    r.json().set(f"game_room:{room_id}", "$", game_room)
+    game_room = GameRoom (
+        players=players,
+        anime_list=animes,
+        scoreboard=Scoreboard(
+            players=players,
+            score=0,
+            rounds=10
+        )
+    )
+    r.json().set(f"game_room:{room_id}", "$", game_room.model_dump())
     r.expire(f"game_room:{room_id}", 3600)
     add_to_recent_animes(animes, players)
     return room_id
