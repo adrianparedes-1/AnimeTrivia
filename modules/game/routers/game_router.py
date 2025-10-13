@@ -54,5 +54,10 @@ def start_game(request: Request):
 #                 status_code=status.HTTP_200_OK,
 #                 content="Player did not submit a guess"
 #             )
-def logic():
-    selection()
+def logic(request: Request):
+    necessary_player_info = {
+        "id": request.state.user["id"],
+        "username": request.state.user["username"],
+        "display_name": request.state.user["display_name"]
+    }
+    selection(necessary_player_info["id"])

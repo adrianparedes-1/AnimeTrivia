@@ -11,39 +11,55 @@ Game logic.
 '''
 r = get_client()
 
-keys_index = 1
+# def selection(room_id: str):
+#     # Get the anime list length first
+#     anime_count = r.json().arrlen(f"game_room:{room_id}", "$.anime_list")[0]
+    
+#     if anime_count == 0:
+#         return None  # Game over
+    
+#     # Select random index
+#     random_selection = random.randint(0, anime_count - 1)
+    
+#     # Get the selected anime
+#     selected_anime = r.json().get(f"game_room:{room_id}", f"$.anime_list[{random_selection}]")[0]
+    
+#     # Remove it from the list
+#     r.json().delete(f"game_room:{room_id}", f"$.anime_list[{random_selection}]")
+    
+#     return selected_anime
 
-def selection():
+def selection(player_id: int):
     '''
     1. select a random anime from the available animes in the game_room object.
     2. when an anime is selected, delete it from the game_room object
     3. Once there are no more animes, game is over, and return the scoreboard
     '''
-    ...
     resulting_tuple = r.scan(match="game_room:*")
-    
     if resulting_tuple:
-        list_conversion = []
-        list_conversion.extend(resulting_tuple)
-        list_conversion = list_conversion[keys_index]
-        game_room_contents = r.json().mget(list_conversion, "$")
+        # print(resulting_tuple[1])
+        player_ids = r.json().mget(resulting_tuple[1], "$.players.*.id")
+        # print(player_id)
+        # print(player_ids)
+        flattened = sum(player_ids, [])
+        # print(flattened)
+        game_room_key = resulting_tuple[1][0]
+        if player_id in flattened:
+            anime_count = r.json().arrlen(game_room_key, "$.anime_list")
+            # print(f"found it: {anime_count}")
+            print(game_room_key)
+            random_selection = random.randint(0,anime_count[0]) # the limit should be the size of the anime list
+            if random_selection:
+                selected_anime: AnimeRedis = r.json().get(game_room_key, f"$.anime_list[{random_selection}]")
+                # print(selected_anime[0]["titles"]) #come back to this
 
-        validated_game_room_contents: List[GameRoom] = []
-        for room in game_room_contents:
-            validated_game_room_contents.append(GameRoom.model_validate(room[0]))
-
-    for room in validated_game_room_contents:
-        random_selection = random.randint(0,9)
-        random_anime = room.anime_list[random_selection]
-    print(random_anime)
-    r.json().delete(random_anime.anime, f"{resulting_tuple}")
-    return random_anime.titles
+    r.json().delete(game_room_key, f"$.anime_list[{random_selection}]")
+    return selected_anime[0]["titles"]
 
 
 def guessing(guess: Guess):
     '''
     1. player sends guess.
-
     Player will guess by sending a string with the anime name in the body of a POST request
     '''
     if guess:
