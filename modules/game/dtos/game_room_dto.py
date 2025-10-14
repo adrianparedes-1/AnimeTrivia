@@ -6,13 +6,12 @@ from modules.game.dtos.clean_retrieval import AnimeRedis
 from pydantic import RootModel
 
 class Scoreboard(Base):
-    players: Optional[Players]
-    score: int
+    players_scores: Mapping[int, int]
     rounds: int
 
 class GameRoom(Base):
     timer: Optional[float] = None
-    players: Players
+    players: Optional[Players] = None
     anime_list: Optional[List[AnimeRedis]] = None
     scoreboard: Optional[Scoreboard] = None
 
