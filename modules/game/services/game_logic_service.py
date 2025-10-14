@@ -1,6 +1,8 @@
 from modules.game.dtos.clean_retrieval import AnimeRedis
 from modules.game.dtos.game_room_dto import GameRoom, Guess
 from dependencies.redis_client import get_client
+from fastapi import Response
+from fastapi.responses import JSONResponse
 import random
 '''
 Game logic.
@@ -36,8 +38,9 @@ def selection(player_id: int):
     
     anime_count = r.json().arrlen(game_room_key, "$.anime_list")
     if anime_count[0] == 0:
+        scoreboard = r.json().get(game_room_key, "$.scoreboard")[0]
         r.json().delete(game_room_key, "$")
-        return None, game_room_key, "game_over"
+        return scoreboard, game_room_key, "game_over"
     
     random_selection = random.randint(0, anime_count[0] - 1)
     selected_anime = r.json().get(game_room_key, f"$.anime_list[{random_selection}]")
@@ -51,35 +54,39 @@ def selection(player_id: int):
 
 def guessing(guess: Guess, player_id: int):
     if not guess:
-        return "Player did not submit a guess"
+        return {"error": "Player did not submit a guess"}
     
-    anime_titles, game_room_key, status = selection(player_id)
+    response, game_room_key, status = selection(player_id)
     
     if status == "no_room":
-        return "Game room not found"
+        return {"error": "Game room not found"}
     elif status == "game_over":
-        return "Game Over!"
+        return {"message": "Game Over!",
+                "scoreboard": response
+                }
     elif status == "no_anime":
-        return "No valid anime found"
+        return {"error": "No valid anime found"}
     
     r.json().numincrby(game_room_key, "$.scoreboard.rounds", -1)
-    for title in anime_titles:
+    for title in response:
         if title["name"].lower() == guess.name.lower():
             r.json().numincrby(game_room_key, f"$.scoreboard.players_scores.{player_id}", 1)
-            return "Correct!"
+            scoreboard = r.json().get(game_room_key, "$.scoreboard.players_scores")
+            
+            return {
+                "result": "Correct!",
+                "scoreboard": scoreboard[0] if scoreboard else {}
+            }
     
-    return 'WRONG!' # just return the current score
+    scoreboard = r.json().get(game_room_key, "$.scoreboard.players_scores")
+    return {
+        "result": "Wrong!",
+        "scoreboard": scoreboard[0] if scoreboard else {},
+        "rounds_left": r.json().get(game_room_key, "$.scoreboard.rounds")[0]
+    }
 
-
-def update_scoreboard(player_id: int):
-    '''
-    1. update the player's score
-    2. return the player's current score
-    '''
+def get_scoreboard(player_id: int):
+    '''return scoreboard'''
     game_room_key = find_game_room(player_id)
     if game_room_key:
-        ...
-
-
-def clean_up_game_room():
-    ...
+        return r.json().get(game_room_key, "$.scoreboard")[0]
