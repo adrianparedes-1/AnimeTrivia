@@ -72,13 +72,3 @@ python main.py
 * Redis must be running with the JSON module enabled for proper game state management.
 * Game rooms are ephemeral and stored in Redis as JSON objects.
 
-## Contributing
-
-1. Fork the repository
-2. Create a new feature branch
-3. Submit a pull request
-
-```
-
-I can also **add a “Development & Testing” section** showing how to simulate multiplayer locally and explain the Redis JSON structure for game rooms. This helps anyone running or contributing to the project understand it fully. Do you want me to add that?
-```
