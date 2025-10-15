@@ -1,8 +1,6 @@
 from modules.game.dtos.clean_retrieval import AnimeRedis
 from modules.game.dtos.game_room_dto import GameRoom, Guess
 from dependencies.redis_client import get_client
-from fastapi import Response
-from fastapi.responses import JSONResponse
 import random
 '''
 Game logic.
@@ -41,6 +39,7 @@ def selection(player_id: int):
         scoreboard = r.json().get(game_room_key, "$.scoreboard")[0]
         r.json().delete(game_room_key, "$")
         return scoreboard, game_room_key, "game_over"
+    
     
     random_selection = random.randint(0, anime_count[0] - 1)
     selected_anime = r.json().get(game_room_key, f"$.anime_list[{random_selection}]")
