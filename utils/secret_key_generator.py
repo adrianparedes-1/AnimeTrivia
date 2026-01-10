@@ -2,7 +2,7 @@ import secrets
 import base64
 from pathlib import Path
 
-env_path = Path("../.env")
+env_path = Path(".env")
 env_key = "SECRET_KEY"
 
 if env_path.exists():

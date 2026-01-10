@@ -12,6 +12,15 @@ from dependencies.redis_client import get_client
 # )
 
 
+# def fetch_user_id():
+#     '''
+#     Fetch user id from db
+#     '''
+#     with next(get_db(request)) as db:
+#         query = db.query(User).filter(
+#             User.id == user_id
+#         ).first()
+
 def create(user: UserCreateDTO) -> UserAuthResponse:
     with next(get_db()) as db:
         query_existing = db.query(User).filter(

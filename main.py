@@ -33,11 +33,11 @@ app.include_router(game_router.router)
 
 @app.middleware("http")
 async def auth_user(request: Request, call_next):
-    public_paths = ["/auth*", "/admin*", "/docs*", "/openapi.json"]
+    public_paths = ["/auth", "/auth/callback*", "/admin*", "/docs*", "/openapi.json"]
 
     if request.method == "OPTIONS":
         return await call_next(request)
-    
+    # print("Print request in middleware: " + (await request.json()))
     # if the path we are trying to access is a public path, go on to the route
     if any(fnmatch.fnmatch(request.url.path, pat) for pat in public_paths):
         return await call_next(request)
