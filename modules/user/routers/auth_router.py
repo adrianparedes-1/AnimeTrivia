@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Request, Response
+from fastapi import APIRouter, Request, Response, status
 from fastapi.responses import RedirectResponse
 from fastapi.datastructures import URL
 from dependencies.token_service import create_tokens
@@ -20,19 +20,15 @@ router = APIRouter(
 
 @router.get("")
 async def login():
-    sso = await get_sso()
-    return await sso.get_login_redirect()
+    async with get_sso() as sso:
+        return await sso.get_login_redirect()
         
 
 @router.get("/callback")
 async def callback(request: Request):
-    sso = await get_sso()
-        # try: #catch any failure with the oauth flow
-        #     user = await sso.verify_and_process(request)
-        # except Exception as e:
-        #     logger.exception(e)
+    async with get_sso() as sso:
+        user = await sso.verify_and_process(request)
     # save user in db
-    user = await sso.verify_and_process(request)
     user_db = create(user)
     # initialize local variables to save spotify tokens
     spotify_access_token = sso._custom_access_token
@@ -53,7 +49,10 @@ async def callback(request: Request):
 
     # redirect to complete endpoint
     return RedirectResponse(
-        url=URL("/auth/complete")
+        url=URL(
+            "/complete"
+        ),
+        status_code=status.HTTP_204_NO_CONTENT
     )
 
 # redirect to menu router
@@ -71,6 +70,7 @@ def get_user(request: Request):
 @router.delete("/logout")
 async def logout(request: Request):
     user_id = request.state.user["id"]
-    print(user_id)
     logout_service(user_id)
-    return Response (status_code=204)
+    return Response (
+        status_code=status.HTTP_204_NO_CONTENT
+    )

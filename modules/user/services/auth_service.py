@@ -5,7 +5,9 @@ from dependencies.spotify_sso import (
     redirect_uri,
     CustomSpotifySSO
 )
+from contextlib import asynccontextmanager
 
+@asynccontextmanager
 async def get_sso():
     async with CustomSpotifySSO(
         client_id=client_id,
@@ -13,7 +15,7 @@ async def get_sso():
         redirect_uri=redirect_uri,
         scope="user-read-email user-read-private"
     ) as sso:
-        return sso
+        yield sso
 
 def logout_service(user_id: int):
     '''
