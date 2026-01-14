@@ -18,6 +18,8 @@ class CustomSpotifySSO(SpotifySSO):
         self._custom_refresh_token: Optional[str] = None
         self._custom_expires_in: Optional[int] = None
         self._custom_scope: Optional[str] = None
+        self._generated_state: Optional[str] = None
+        self.requires_state = True
 
     async def verify_and_process(self, request: Request) -> OpenID:
         user = await super().verify_and_process(request)
@@ -28,7 +30,6 @@ class CustomSpotifySSO(SpotifySSO):
         self._custom_scope = token_data.get("scope")
         
         return user
-
     
 # def sso_dependency() -> CustomSpotifySSO:
 #     return CustomSpotifySSO (

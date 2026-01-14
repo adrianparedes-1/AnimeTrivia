@@ -23,7 +23,7 @@ def get_recent_animes(player_id: int):
     Fetch the recent animes in cache to avoid selecting the same songs.
     '''
     try:
-        return r.json().get(f"recent_animes: {player_id}")
+        return r.json().get(f"{player_id}:recent_animes")
     except:
         return []
 
@@ -33,13 +33,13 @@ def add_to_recent_animes(animes, players: List[dict]):
     '''
     for player in players:
         cached_animes = get_recent_animes(player["id"])
-        if not cached_animes:
-            r.json().set(f"{player["id"]}: recent_animes", "$", cached_animes)
-            r.expire(f"{player["id"]}: recent_animes", 86400)
+        if not cached_animes or not isinstance(cached_animes, list):
+            recent_animes = [item for item in animes]
         else:
-            cached_animes.extend(anime for anime in animes)
-            r.json().set(f"{player["id"]}: recent_animes", "$", cached_animes)
-            r.expire(f"{player["id"]}: recent_animes", 86400)
+            recent_animes = cached_animes + animes
+        
+        r.json().set(f"{player['id']}:recent_animes", "$", recent_animes)
+        r.expire(f"{player['id']}:recent_animes", 86400)
 
 def create_game_room(players: List[dict]):
     '''
@@ -57,7 +57,6 @@ def create_game_room(players: List[dict]):
             rounds=10
         )
     )
-    
     r.json().set(f"game_room:{room_id}", "$", game_room.model_dump())
     r.expire(f"game_room:{room_id}", 3600)
     add_to_recent_animes(animes, players)
