@@ -33,7 +33,7 @@ app.include_router(game_router.router)
 
 @app.middleware("http")
 async def auth_user(request: Request, call_next):
-    public_paths = ["/auth", "/auth/callback*", "/admin*", "/docs*", "/openapi.json"]
+    public_paths = ["/favicon.ico", "/auth", "/auth/callback*", "/admin*", "/docs*", "/openapi.json"]
 
     if request.method == "OPTIONS":
         return await call_next(request)
