@@ -2,9 +2,7 @@ from dependencies.redis_client import delete_keys_containing, get_client
 import os, httpx
 from dotenv import load_dotenv
 from utils.state_generator import create_state
-from contextlib import asynccontextmanager
 from utils.pkce_code_utils import *
-from modules.user.dtos.auth_response_dto import SpotifyLoginResponse
 
 load_dotenv()
 
@@ -14,26 +12,24 @@ redirect_uri = os.getenv("CALLBACK_URL")
 spotify_auth_url = "https://accounts.spotify.com/authorize"
 scope="user-read-email user-read-private"
 
-@asynccontextmanager
-async def process_login():
-    async with httpx.AsyncClient() as client:
-        code = code_verifier()
-        code_challenge = code_hashing(code)
-        state = create_state()
-        response: SpotifyLoginResponse = await client.get(
-            url=spotify_auth_url,
-            params={
-                "client_id": client_id,
-                "response_type": code,
-                "redirect_uri": redirect_uri,
-                "state": state,
-                "scope": scope,
-                "code_challenge_method": "S256",
-                "code_challenge": code_challenge
-            })
-        
-        yield response
-
+def process_login():
+    code = code_verifier()
+    code_challenge = code_hashing(code)
+    state = create_state()
+    params={
+            "client_id": client_id,
+            "response_type": "code",
+            "redirect_uri": redirect_uri,
+            "state": state,
+            "scope": scope,
+            "code_challenge_method": "S256",
+            "code_challenge": code_challenge
+        }
+    
+    return (
+        spotify_auth_url,
+        params
+    )
 
 
 async def exchange_code_token(code: str):

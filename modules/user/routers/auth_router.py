@@ -3,7 +3,7 @@ from fastapi.responses import RedirectResponse
 from fastapi.datastructures import URL
 from dependencies.token_service import create_tokens
 from ..services.auth_service import logout_service, set_code, check_code, process_login
-import logging
+import logging, httpx
 from dependencies.spotify_sso import (
     client_id,
     client_secret,
@@ -16,7 +16,7 @@ from modules.user.services.user_service import (
 )
 
 logger = logging.getLogger()
-spotify_auth_url = "https://accounts.spotify.com/authorize"
+
 router = APIRouter(
     prefix="/auth", 
     tags=["Authentication"]
@@ -25,25 +25,18 @@ router = APIRouter(
 
 @router.get("")
 async def login():
-    async with process_login():
-        return RedirectResponse(
+    spotify_auth_url, params = process_login()
+    return RedirectResponse(
+        url=httpx.URL(
             spotify_auth_url,
-            303
-            )
-    # test_state()
-    # async with CustomSpotifySSO(
-    #     client_id=client_id,
-    #     client_secret=client_secret,
-    #     redirect_uri=redirect_uri,
-    #     scope="user-read-email user-read-private"
-    # ) as sso:
-    #     print(f"Test: {sso._generated_state}")
-        # return await sso.get_login_redirect()
-        
+            params=params
+        ),
+        status_code=status.HTTP_303_SEE_OTHER
+    )
 
 @router.get("/callback")
 async def callback(request: Request):
-
+    
     #stop duplicate call to verify_and_process
     code = request.query_params.get("code")
     response = check_code(code)
