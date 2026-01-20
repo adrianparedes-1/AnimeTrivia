@@ -1,11 +1,6 @@
 import secrets
-import base64
 
 
-def create_state() -> bytes:
-    key = secrets.token_bytes(64)
-    return key
+def create_state() -> str:
+    return secrets.token_urlsafe(64)
 
-
-
-# encoded_key = base64.urlsafe_b64encode(key)

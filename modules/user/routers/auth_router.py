@@ -2,7 +2,7 @@ from fastapi import APIRouter, Request, Response, status
 from fastapi.responses import RedirectResponse
 from fastapi.datastructures import URL
 from dependencies.token_service import create_tokens
-from ..services.auth_service import logout_service, set_code, check_code, process_login
+from ..services.auth_service import logout_service, check_session, process_login, exchange_code_token
 import logging, httpx
 from dependencies.spotify_sso import (
     client_id,
@@ -22,7 +22,6 @@ router = APIRouter(
     tags=["Authentication"]
 )
 
-
 @router.get("")
 async def login():
     spotify_auth_url, params = process_login()
@@ -36,52 +35,61 @@ async def login():
 
 @router.get("/callback")
 async def callback(request: Request):
-    
-    #stop duplicate call to verify_and_process
     code = request.query_params.get("code")
-    response = check_code(code)
-    if response == 204:
-        return Response(status_code=200)
-    set_code(code)
+    state = request.query_params.get("state")
+    #this happens on any error so i can do a try catch
+    if not code:
+        error = request.query_params.get("error")
+        return Response(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content=error
+        )
+    # r = check_session()
+    # if r == 204:
+    #     return RedirectResponse(
+    #         url=URL(
+    #             "/home"
+    #         ),
+    #         status_code=status.HTTP_303_SEE_OTHER
+    #     )
+    
+    response = await exchange_code_token(code, state)
 
-    async with CustomSpotifySSO(
-        client_id=client_id,
-        client_secret=client_secret,
-        redirect_uri=redirect_uri,
-        scope="user-read-email user-read-private",
-    ) as sso:
-        user = await sso.verify_and_process(request)
-    # save user in db
-    user_db = create(user)
-    # initialize local variables to save spotify tokens
-    spotify_access_token = sso._custom_access_token
-    spotify_refresh_token = sso._custom_refresh_token
+
+    
+    # return response
+
+    # async with CustomSpotifySSO(
+    #     client_id=client_id,
+    #     client_secret=client_secret,
+    #     redirect_uri=redirect_uri,
+    #     scope="user-read-email user-read-private",
+    # ) as sso:
+    #     user = await sso.verify_and_process(request)
+    # # save user in db
+    # user_db = create(user)
+    # # initialize local variables to save spotify tokens
+    # spotify_access_token = sso._custom_access_token
+    # spotify_refresh_token = sso._custom_refresh_token
     # create backend tokens
-    app_access_token, app_refresh_token = create_tokens(user_db.model_dump())
-    # print(f"Test ------------- {app_access_token}")
-    # print(f"Test ------------- {app_refresh_token}")
-    # save all tokens in redis
-    if app_access_token and app_refresh_token:\
-        save_in_redis(
-            user_db.id,
-            app_access_token,
-            app_refresh_token,
-            spotify_access_token,
-            spotify_refresh_token
-            )
+    # app_access_token, app_refresh_token = create_tokens(user_db.model_dump())
+    # # print(f"Test ------------- {app_access_token}")
+    # # print(f"Test ------------- {app_refresh_token}")
+    # # save all tokens in redis
+    # if app_access_token and app_refresh_token:
+    #     save_in_redis(
+    #         user_db.id,
+    #         app_access_token,
+    #         app_refresh_token,
+    #         spotify_access_token,
+    #         spotify_refresh_token
+    #         )
     # redirect to complete endpoint
     return RedirectResponse(
-        url=URL(
-            "/complete"
+        url=httpx.URL(
+            "/home",
         ),
-        status_code=status.HTTP_204_NO_CONTENT
-    )
-
-# redirect to menu router
-@router.get("/complete")
-def get_token():
-    return RedirectResponse(
-        url=URL("/home")
+        status_code=status.HTTP_303_SEE_OTHER
     )
 
 @router.get("/user")
