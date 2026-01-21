@@ -9,7 +9,6 @@ class UserResponseDTO(BaseModel):
     display_name: str
     provider: str
 
-
 class UserAuthResponse(BaseModel):
     id: int
     username: str
@@ -17,4 +16,3 @@ class UserAuthResponse(BaseModel):
     first_name: Optional[str] = None
     last_name: Optional[str] = None
     display_name: str
-

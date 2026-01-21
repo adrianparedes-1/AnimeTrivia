@@ -1,14 +1,21 @@
 from dependencies.redis_client import delete_keys_containing, get_client
+from dependencies.token_service import create_tokens
+from modules.user.dtos.openid_dto import OpenIDDTO
 import os, httpx
 from dotenv import load_dotenv
 from utils.state_generator import create_state
 from utils.pkce_code_utils import code_verifier, code_challenge
+from modules.user.services.user_service import (
+    create_in_db,
+    save_in_redis
+)
 
 load_dotenv()
 
 client_id = os.getenv("CLIENT_ID") 
 client_secret = os.getenv("CLIENT_SERVICE")
 redirect_uri = os.getenv("CALLBACK_URL")
+spotify_user_endpoint = "https://api.spotify.com/v1/me"
 spotify_auth_url = "https://accounts.spotify.com/authorize"
 spotify_exchange_url = "https://accounts.spotify.com/api/token"
 scope="user-read-email user-read-private"
@@ -26,7 +33,8 @@ def process_login():
             "state": state,
             "scope": scope,
             "code_challenge_method": "S256",
-            "code_challenge": code_chall
+            "code_challenge": code_chall,
+            "show_dialog": "true"
         }
     
     return (
@@ -35,9 +43,19 @@ def process_login():
     )
 
 async def exchange_code_token(code: str, state: str):
+    '''
+    Exchange auth code for Spotify access and refresh tokens
+    
+    :param code: auth code from Spotify Response
+    :type code: str
+    :param state: state string from Spotify Response
+    :type state: str
+
+    '''
     verifier = get_code(state)
+    # i need to add guards here (try/catch)
     async with httpx.AsyncClient() as client:
-        r = await client.post(
+        response = await client.post(
             url=spotify_exchange_url,
             headers={
             "Content-Type" : "application/x-www-form-urlencoded"
@@ -50,8 +68,52 @@ async def exchange_code_token(code: str, state: str):
                 "code_verifier": verifier
             }
         )
-    print("Response:", r.json())
-    return r.json()
+    openid = fetch_user_info(response.json()["access_token"])
+    save_user_and_tokens(
+        openid,
+        response.json()["access_token"],
+        response.json()["refresh_token"]
+    )
+    return response.json()
+
+def fetch_user_info(spotify_access_token: str) -> OpenIDDTO:
+    '''
+    Fetch user info from Spotify API endpoint
+    '''
+    # also add guards here
+    with httpx.Client() as client:
+        r = client.get(
+            url=spotify_user_endpoint,
+            headers={
+                "Authorization" : f"Bearer {spotify_access_token}"
+            }
+        )
+    print("Response:", r.status_code, r.text)
+    return OpenIDDTO(
+        username=r.json()["id"],
+        email=r.json()["email"],
+        display_name=r.json()["display_name"]
+    )
+
+def save_user_and_tokens(
+        user: OpenIDDTO,
+        spotify_access_token: str,
+        spotify_refresh_token: str
+        ):
+    user_db = create_in_db(user)
+    # create backend tokens
+    app_access_token, app_refresh_token = create_tokens(user_db.model_dump())
+    # print(f"Test ------------- {app_access_token}")
+    # print(f"Test ------------- {app_refresh_token}")
+    # save all tokens in redis
+    if app_access_token and app_refresh_token:
+        save_in_redis(
+            user_db.id,
+            app_access_token,
+            app_refresh_token,
+            spotify_access_token,
+            spotify_refresh_token
+            )
 
 def create_session(code_verifier: str, state: str):
     r = get_client()

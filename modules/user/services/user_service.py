@@ -1,5 +1,5 @@
 # import httpx, base64
-from modules.user.dtos.user_create_dto import UserCreateDTO
+from modules.user.dtos.openid_dto import OpenIDDTO
 from modules.user.dtos.user_response_dto import UserAuthResponse
 from modules.user.models.user_model import User
 from modules.menu.models.profile_model import Profile
@@ -21,11 +21,11 @@ from dependencies.redis_client import get_client
 #             User.id == user_id
 #         ).first()
 
-def create(user: UserCreateDTO) -> UserAuthResponse:
+def create_in_db(user: OpenIDDTO) -> UserAuthResponse:
     with next(get_db()) as db:
         query_existing = db.query(User).filter(
             User.email == user.email,
-            User.username == user.id
+            User.username == user.username
         ).first()
 
         if not query_existing:
@@ -45,7 +45,7 @@ def create(user: UserCreateDTO) -> UserAuthResponse:
                 db.commit() # commit to db
             except Exception:
                 db.rollback() # if there is any issue, rollback to clean state
-                raise # since we will be rolling back, we need to let the error handler that there was an issue, so we raise an error with the traceback
+                raise # since we will be rolling back, we need to let the error handler know that there was an issue, so we raise an error with the traceback
             db.refresh(user_orm)
             user_db = user_orm
         else:
@@ -77,18 +77,3 @@ def save_in_redis(user_id,
     # for key in keys:
     #     value = r.get(key)
     #     print(f"{key} => {value}")
-
-# async def exchange_code_token(code: str):
-#     async with httpx.AsyncClient() as client:
-#         r = await client.post("https://accounts.spotify.com/api/token",
-#                           headers={
-#                               "Authorization" : f"Basic {base64.b64encode(f"{client_id}:{client_secret}".encode()).decode()}",
-#                               "Content-Type" : "application/x-www-form-urlencoded"
-#                               },
-#                           data={
-#                               "grant_type": "authorization_code",
-#                               "code" : f"{code}",
-#                               "redirect_uri" : f"{redirect_uri}"
-#                           })
-    
-#     return r

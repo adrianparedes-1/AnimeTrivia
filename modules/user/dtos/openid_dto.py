@@ -4,7 +4,7 @@ class IgnoreExtraBase(BaseModel):
     model_config = {"extra": "ignore"}
 
 
-class UserCreateDTO(IgnoreExtraBase):
-    username: str = Field(alias='id')
+class OpenIDDTO(IgnoreExtraBase):
+    username: str
     email: EmailStr
     display_name: str

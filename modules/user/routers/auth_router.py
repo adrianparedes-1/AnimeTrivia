@@ -1,19 +1,17 @@
 from fastapi import APIRouter, Request, Response, status
 from fastapi.responses import RedirectResponse
 from fastapi.datastructures import URL
-from dependencies.token_service import create_tokens
-from ..services.auth_service import logout_service, check_session, process_login, exchange_code_token
+
+from ..services.auth_service import logout_service, check_session, process_login, exchange_code_token, fetch_user_info
 import logging, httpx
+import fastapi_sso
 from dependencies.spotify_sso import (
     client_id,
     client_secret,
     redirect_uri,
     CustomSpotifySSO
 )
-from modules.user.services.user_service import (
-    create,
-    save_in_redis
-)
+
 
 logger = logging.getLogger()
 
@@ -53,8 +51,9 @@ async def callback(request: Request):
     #         status_code=status.HTTP_303_SEE_OTHER
     #     )
     
-    response = await exchange_code_token(code, state)
-
+    await exchange_code_token(code, state)
+    # # print(response["access_token"])
+    # await fetch_user_info(response["access_token"])
 
     
     # return response
@@ -66,24 +65,7 @@ async def callback(request: Request):
     #     scope="user-read-email user-read-private",
     # ) as sso:
     #     user = await sso.verify_and_process(request)
-    # # save user in db
-    # user_db = create(user)
-    # # initialize local variables to save spotify tokens
-    # spotify_access_token = sso._custom_access_token
-    # spotify_refresh_token = sso._custom_refresh_token
-    # create backend tokens
-    # app_access_token, app_refresh_token = create_tokens(user_db.model_dump())
-    # # print(f"Test ------------- {app_access_token}")
-    # # print(f"Test ------------- {app_refresh_token}")
-    # # save all tokens in redis
-    # if app_access_token and app_refresh_token:
-    #     save_in_redis(
-    #         user_db.id,
-    #         app_access_token,
-    #         app_refresh_token,
-    #         spotify_access_token,
-    #         spotify_refresh_token
-    #         )
+
     # redirect to complete endpoint
     return RedirectResponse(
         url=httpx.URL(
