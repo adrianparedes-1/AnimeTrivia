@@ -1,17 +1,8 @@
 from fastapi import APIRouter, Request, Response, status
 from fastapi.responses import RedirectResponse
 from fastapi.datastructures import URL
-
-from ..services.auth_service import logout_service, check_session, process_login, exchange_code_token, fetch_user_info
+from ..services.auth_service import logout_service, process_login, exchange_code_token, delete_session
 import logging, httpx
-import fastapi_sso
-from dependencies.spotify_sso import (
-    client_id,
-    client_secret,
-    redirect_uri,
-    CustomSpotifySSO
-)
-
 
 logger = logging.getLogger()
 
@@ -42,34 +33,12 @@ async def callback(request: Request):
             status_code=status.HTTP_400_BAD_REQUEST,
             content=error
         )
-    # r = check_session()
-    # if r == 204:
-    #     return RedirectResponse(
-    #         url=URL(
-    #             "/home"
-    #         ),
-    #         status_code=status.HTTP_303_SEE_OTHER
-    #     )
     
     await exchange_code_token(code, state)
-    # # print(response["access_token"])
-    # await fetch_user_info(response["access_token"])
-
-    
-    # return response
-
-    # async with CustomSpotifySSO(
-    #     client_id=client_id,
-    #     client_secret=client_secret,
-    #     redirect_uri=redirect_uri,
-    #     scope="user-read-email user-read-private",
-    # ) as sso:
-    #     user = await sso.verify_and_process(request)
-
-    # redirect to complete endpoint
+    delete_session()
     return RedirectResponse(
         url=httpx.URL(
-            "/home",
+            "http://127.0.0.1:5173/home",
         ),
         status_code=status.HTTP_303_SEE_OTHER
     )

@@ -136,7 +136,7 @@ def check_session():
 
 def delete_session():
     r = get_client()
-    r.delete("")
+    r.delete(f"code:*")
 
 def logout_service(user_id: int):
     delete_keys_containing(user_id)
