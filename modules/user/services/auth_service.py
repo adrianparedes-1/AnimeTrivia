@@ -1,7 +1,7 @@
 from dependencies.redis_client import delete_keys_containing, get_client
 from dependencies.token_service import create_tokens
 from modules.user.dtos.openid_dto import OpenIDDTO
-import os, httpx
+import os, httpx, secrets
 from dotenv import load_dotenv
 from utils.state_generator import create_state
 from utils.pkce_code_utils import code_verifier, code_challenge
@@ -69,12 +69,14 @@ async def exchange_code_token(code: str, state: str):
             }
         )
     openid = fetch_user_info(response.json()["access_token"])
+    sid = gen_sid()
     save_user_and_tokens(
+        sid,
         openid,
         response.json()["access_token"],
         response.json()["refresh_token"]
     )
-    return response.json()
+    return sid
 
 def fetch_user_info(spotify_access_token: str) -> OpenIDDTO:
     '''
@@ -96,10 +98,11 @@ def fetch_user_info(spotify_access_token: str) -> OpenIDDTO:
     )
 
 def save_user_and_tokens(
+        sid: str,
         user: OpenIDDTO,
         spotify_access_token: str,
         spotify_refresh_token: str
-        ):
+        ) -> str:
     user_db = create_in_db(user)
     # create backend tokens
     app_access_token, app_refresh_token = create_tokens(user_db.model_dump())
@@ -108,12 +111,14 @@ def save_user_and_tokens(
     # save all tokens in redis
     if app_access_token and app_refresh_token:
         save_in_redis(
+            sid,
             user_db.id,
             app_access_token,
             app_refresh_token,
             spotify_access_token,
             spotify_refresh_token
             )
+    return sid
 
 def create_session(code_verifier: str, state: str):
     r = get_client()
@@ -140,3 +145,6 @@ def delete_session():
 
 def logout_service(user_id: int):
     delete_keys_containing(user_id)
+
+def gen_sid():
+    return secrets.token_urlsafe(32)

@@ -26,7 +26,7 @@ async def login():
 async def callback(request: Request):
     code = request.query_params.get("code")
     state = request.query_params.get("state")
-    #this happens on any error so i can do a try catch
+    
     if not code:
         error = request.query_params.get("error")
         return Response(
@@ -34,14 +34,22 @@ async def callback(request: Request):
             content=error
         )
     
-    await exchange_code_token(code, state)
+    sid = await exchange_code_token(code, state)
     delete_session()
-    return RedirectResponse(
-        url=httpx.URL(
-            "http://127.0.0.1:5173/home",
-        ),
+    
+    response = RedirectResponse(
+        url="http://127.0.0.1:5173/home",
         status_code=status.HTTP_303_SEE_OTHER
     )
+    response.set_cookie(
+        key="sessionid",
+        value=sid,
+        httponly=True,
+        secure=False,
+        samesite="lax",
+        path="/"
+    )
+    return response
 
 @router.get("/user")
 def get_user(request: Request):

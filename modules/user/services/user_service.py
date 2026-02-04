@@ -60,20 +60,25 @@ def create_in_db(user: OpenIDDTO) -> UserAuthResponse:
         )
 
 
-def save_in_redis(user_id, 
-            app_access_token,
-            app_refresh_token,
-            spotify_access_token,
-            spotify_refresh_token
-            ):
+def save_in_redis(
+        sid: str,
+        user_id: int, 
+        app_access_token: str,
+        app_refresh_token: str,
+        spotify_access_token: str,
+        spotify_refresh_token: str
+        ):
     r = get_client()
-    r.setex(f"{user_id}:app_access_token", 86400, app_access_token) # for development 
-    r.setex(f"{user_id}:app_refresh_token", 86400, app_refresh_token)
-    r.setex(f"{user_id}:spotify_access_token", 3600, spotify_access_token)
-    r.setex(f"{user_id}:spotify_refresh_token", 86400, spotify_refresh_token)
+    # i need to set these individually for separate expiration timers
+    r.setex(f"{sid}:{user_id}:app_access_token", 86400, app_access_token) # for development 
+    r.setex(f"{sid}:{user_id}:app_refresh_token", 86400, app_refresh_token)
+    r.setex(f"{sid}:{user_id}:spotify_access_token", 3600, spotify_access_token)
+    r.setex(f"{sid}:{user_id}:spotify_refresh_token", 86400, spotify_refresh_token)
 
     # uncomment to print values
     # keys = r.keys(f"{user_id}:*")
     # for key in keys:
     #     value = r.get(key)
     #     print(f"{key} => {value}")
+
+
