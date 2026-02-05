@@ -42,7 +42,7 @@ async def callback(request: Request):
         status_code=status.HTTP_303_SEE_OTHER
     )
     response.set_cookie(
-        key="sessionid",
+        key="sid",
         value=sid,
         httponly=True,
         secure=False,

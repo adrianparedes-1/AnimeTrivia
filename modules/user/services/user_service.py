@@ -10,7 +10,7 @@ from dependencies.redis_client import get_client
 #     client_id,
 #     client_secret
 # )
-
+SESSION_TTL = 3600
 
 # def fetch_user_id():
 #     '''
@@ -69,11 +69,15 @@ def save_in_redis(
         spotify_refresh_token: str
         ):
     r = get_client()
-    # i need to set these individually for separate expiration timers
-    r.setex(f"{sid}:{user_id}:app_access_token", 86400, app_access_token) # for development 
-    r.setex(f"{sid}:{user_id}:app_refresh_token", 86400, app_refresh_token)
-    r.setex(f"{sid}:{user_id}:spotify_access_token", 3600, spotify_access_token)
-    r.setex(f"{sid}:{user_id}:spotify_refresh_token", 86400, spotify_refresh_token)
+    r.hset(f"session:{sid}", 
+           mapping={
+            "user_id": user_id,
+            "access_token": app_access_token,
+            "refresh_token": app_refresh_token,
+            "spotify_access_token": spotify_access_token,
+            "spotify_refresh_token": spotify_refresh_token
+        })
+    r.expire(f"session:{sid}", SESSION_TTL)
 
     # uncomment to print values
     # keys = r.keys(f"{user_id}:*")

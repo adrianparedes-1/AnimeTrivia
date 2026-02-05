@@ -1,4 +1,4 @@
-import os
+import os, redis
 from jose import ExpiredSignatureError, jwt
 from jose.exceptions import JWEInvalidAuth
 from fastapi import Response, status
@@ -33,8 +33,18 @@ def create_tokens(data: dict):
         ALGORITHM
     )
     return access_token, refresh_token
-    
-def check_token(token, r, sid) -> dict:
+
+
+
+
+
+#TODO: dont need this anymore bc im not going to use jwt for auth. it will be session based from now on.
+
+def check_token(
+        token: str,
+        r: redis.Redis, 
+        sid: str
+        ) -> dict:
     """
     This function check jwt token passed in the request's headers, and verifies it with the session in redis.
     If it is valid, it returns a decoded token.
@@ -43,7 +53,6 @@ def check_token(token, r, sid) -> dict:
     
     if not token:
         return Response(status_code=status.HTTP_401_UNAUTHORIZED)
-        
     try:
         decoded = jwt.decode(
             token, 
@@ -57,6 +66,7 @@ def check_token(token, r, sid) -> dict:
 
         r_token = r.get(f"{sid}:{decoded['id']}:app_access_token")
         if not r_token or token != r_token:
+            print("here")
             return Response(status_code=status.HTTP_401_UNAUTHORIZED)
         else:
             return decoded  # Return the decoded dict directly

@@ -1,7 +1,9 @@
 from dependencies.redis_client import delete_keys_containing, get_client
+from fastapi import Response, status
 from dependencies.token_service import create_tokens
 from modules.user.dtos.openid_dto import OpenIDDTO
-import os, httpx, secrets
+from dependencies.token_service import check_token
+import os, httpx, secrets, redis
 from dotenv import load_dotenv
 from utils.state_generator import create_state
 from utils.pkce_code_utils import code_verifier, code_challenge
@@ -120,6 +122,23 @@ def save_user_and_tokens(
             )
     return sid
 
+def check_auth(
+        r: redis.Redis, 
+        sid: str
+        ):
+    sid=sid[4:]
+    if not r.exists(f"session:{sid}"):
+        return Response(status_code=status.HTTP_401_UNAUTHORIZED)
+    
+
+    token = r.hget(f"session:{sid}", "access_token")
+    # wont need this bc we only need to check the session, and we no longer have a jwt in header although i could leave the check just for support
+    check_token(token, r, sid)
+
+
+
+
+
 def create_session(code_verifier: str, state: str):
     r = get_client()
     r.setex(
@@ -133,11 +152,6 @@ def get_code(state: str) -> str:
     code = r.get(f"code:{state}")
     print("Getting code from redis:", code)
     return code
-
-def check_session():
-    r = get_client()
-    if r.exists(f"code:*"):
-        return 204
 
 def delete_session():
     r = get_client()
