@@ -1,8 +1,8 @@
 import fnmatch, redis
 from fastapi import FastAPI, APIRouter, Request, Response
 from starlette.middleware.cors import CORSMiddleware
-# from dependencies.token_service import check_token
-from modules.user.services.auth_service import check_auth
+from dependencies.token_service import check_token
+from modules.user.services.auth_service import check_session
 from dependencies.admin import admin
 from modules.anime.routers import (
     anime_router
@@ -57,12 +57,10 @@ async def auth_user(request: Request, call_next):
     """
 
     # otherwise, get the token from the header and validate it
-    # token = request.headers.get("authorization")
     sid = request.headers.get("Cookie")
-    # print(request.headers)
-    response = check_auth(r, sid)
-    
-    # if the token validation is not successful, return the response from check_token which contains the error in the form of a Response object
+    token = check_session(r, sid)
+    response = check_token(token, r, sid)
+    # if the token validation is not successful, return the response from check_session which contains the error in the form of a Response object
     if isinstance(response, Response): 
         return response
 

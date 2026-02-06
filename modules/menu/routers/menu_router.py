@@ -34,9 +34,3 @@ async def profile(request: Request):
     return RedirectResponse(
             url=URL("/profile")
         )
-
-@router.post("/play")
-def read_profile(request: Request):
-    return RedirectResponse(
-        url=URL("/game")
-    )

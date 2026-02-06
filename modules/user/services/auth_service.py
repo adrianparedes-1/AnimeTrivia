@@ -20,7 +20,7 @@ redirect_uri = os.getenv("CALLBACK_URL")
 spotify_user_endpoint = "https://api.spotify.com/v1/me"
 spotify_auth_url = "https://accounts.spotify.com/authorize"
 spotify_exchange_url = "https://accounts.spotify.com/api/token"
-scope="user-read-email user-read-private"
+scope="streaming user-read-email user-read-private"
 
 def process_login():
     verifier = code_verifier()
@@ -122,21 +122,21 @@ def save_user_and_tokens(
             )
     return sid
 
-def check_auth(
+def check_session(
         r: redis.Redis, 
         sid: str
         ):
+    if not sid:
+        return Response(status_code=status.HTTP_401_UNAUTHORIZED)
     sid=sid[4:]
     if not r.exists(f"session:{sid}"):
         return Response(status_code=status.HTTP_401_UNAUTHORIZED)
     
-
     token = r.hget(f"session:{sid}", "access_token")
-    # wont need this bc we only need to check the session, and we no longer have a jwt in header although i could leave the check just for support
-    check_token(token, r, sid)
-
-
-
+    if not token:
+        return Response(status_code=status.HTTP_401_UNAUTHORIZED)
+    else:
+        return token
 
 
 def create_session(code_verifier: str, state: str):

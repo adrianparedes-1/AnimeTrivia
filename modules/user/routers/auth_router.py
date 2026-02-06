@@ -2,6 +2,7 @@ from fastapi import APIRouter, Request, Response, status
 from fastapi.responses import RedirectResponse
 from fastapi.datastructures import URL
 from ..services.auth_service import logout_service, process_login, exchange_code_token, delete_session
+from ..services.spotify_service import fetch_spotify_token
 import logging, httpx
 
 logger = logging.getLogger()
@@ -51,9 +52,11 @@ async def callback(request: Request):
     )
     return response
 
-@router.get("/user")
-def get_user(request: Request):
-    return request.state.user
+@router.get("/spotify/token")
+def get_spotify_token(request: Request):
+    sid = request.headers.get("Cookie")
+    token = fetch_spotify_token(sid)
+    return token
 
 
 @router.delete("/logout")

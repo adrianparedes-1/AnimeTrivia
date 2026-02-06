@@ -20,16 +20,17 @@ def start_game(request: Request):
         "display_name": request.state.user["display_name"]
     }
     try:
-        create_game_room([necessary_player_info])
+        room_obj = create_game_room([necessary_player_info])
     except Exception as e:
         logger.exception("starting game room failed")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"starting game room failed: {e}"
         )
-    return {
-        "status_code": status.HTTP_200_OK
-    }
+    return (
+        room_obj,
+        status.HTTP_201_CREATED
+    )
 
 
 @router.post("/guess")

@@ -41,7 +41,7 @@ def add_to_recent_animes(animes, players: List[dict]):
         r.json().set(f"{player['id']}:recent_animes", "$", recent_animes)
         r.expire(f"{player['id']}:recent_animes", 86400)
 
-def create_game_room(players: List[dict]):
+def create_game_room(players: List[dict]) -> List[dict]:
     '''
     Creates game room in redis
     ''' 
@@ -60,7 +60,7 @@ def create_game_room(players: List[dict]):
     r.json().set(f"game_room:{room_id}", "$", game_room.model_dump())
     r.expire(f"game_room:{room_id}", 3600)
     add_to_recent_animes(animes, players)
-    return room_id
+    return animes
 
 def fetch_animes(players: List[dict]) -> List[dict]:
     count: int = 10

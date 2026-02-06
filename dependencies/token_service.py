@@ -64,9 +64,8 @@ def check_token(
             }
         )
 
-        r_token = r.get(f"{sid}:{decoded['id']}:app_access_token")
+        r_token = r.hget(f"session:{sid[4:]}", "access_token")
         if not r_token or token != r_token:
-            print("here")
             return Response(status_code=status.HTTP_401_UNAUTHORIZED)
         else:
             return decoded  # Return the decoded dict directly
