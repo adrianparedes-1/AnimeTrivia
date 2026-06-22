@@ -56,9 +56,10 @@ async def auth_user(request: Request, call_next):
         return await call_next(request)
     """
 
-    # otherwise, get the token from the header and validate it
+    # otherwise, get the token from the header and validate it --- now grab cookie from from header
     sid = request.headers.get("Cookie")
     token = check_session(r, sid)
+    print(token)
     response = check_token(token, r, sid)
     # if the token validation is not successful, return the response from check_session which contains the error in the form of a Response object
     if isinstance(response, Response): 

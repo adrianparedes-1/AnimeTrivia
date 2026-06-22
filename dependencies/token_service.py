@@ -35,11 +35,6 @@ def create_tokens(data: dict):
     return access_token, refresh_token
 
 
-
-
-
-#TODO: dont need this anymore bc im not going to use jwt for auth. it will be session based from now on.
-
 def check_token(
         token: str,
         r: redis.Redis, 
@@ -47,10 +42,9 @@ def check_token(
         ) -> dict:
     """
     This function check jwt token passed in the request's headers, and verifies it with the session in redis.
-    If it is valid, it returns a decoded token.
+    If it is valid, it returns a decoded token. -- THIS IS OUTDATED; NEEDS TO BE REVIEWED
     
     """
-    
     if not token:
         return Response(status_code=status.HTTP_401_UNAUTHORIZED)
     try:

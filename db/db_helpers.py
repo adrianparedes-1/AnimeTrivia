@@ -68,6 +68,6 @@ def construct_parent_with_children(
             try:
                 db.commit()
             except Exception:
-                db.rollback()
+                db.rollback() #logging here is important
                 raise 
             

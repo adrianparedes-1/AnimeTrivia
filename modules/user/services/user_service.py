@@ -84,7 +84,3 @@ def save_in_redis(
     # for key in keys:
     #     value = r.get(key)
     #     print(f"{key} => {value}")
-
-
-
-

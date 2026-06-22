@@ -2,7 +2,7 @@ from dependencies.redis_client import get_client
 from fastapi import status
 
 def fetch_spotify_token(sid: str):
-    if not sid:
+    if not sid: # logggggggg
         return (
             "Cookie was not received",
             status.HTTP_400_BAD_REQUEST

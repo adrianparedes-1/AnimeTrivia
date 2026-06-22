@@ -5,7 +5,7 @@ from ..services.auth_service import logout_service, process_login, exchange_code
 from ..services.spotify_service import fetch_spotify_token
 import logging, httpx
 
-logger = logging.getLogger()
+logger = logging.getLogger() # Actually USE logger pls
 
 router = APIRouter(
     prefix="/auth", 
@@ -29,7 +29,7 @@ async def callback(request: Request):
     state = request.query_params.get("state")
     
     if not code:
-        error = request.query_params.get("error")
+        error = request.query_params.get("error") # use logger here maybe lol
         return Response(
             status_code=status.HTTP_400_BAD_REQUEST,
             content=error
